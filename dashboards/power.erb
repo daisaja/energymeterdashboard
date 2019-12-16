@@ -1,6 +1,6 @@
 <script type='text/javascript'>
  $(function() {
-   Dashing.gridsterLayout('[{"col":1,"row":1,"size_x":1,"size_y":1},{"col":2,"row":1,"size_x":1,"size_y":1},{"col":3,"row":1,"size_x":1,"size_y":1}]')
+   Dashing.gridsterLayout('[{"col":1,"row":1,"size_x":1,"size_y":1},{"col":3,"row":1,"size_x":1,"size_y":1},{"col":3,"row":2,"size_x":1,"size_y":1},{"col":2,"row":1,"size_x":1,"size_y":1},{"col":2,"row":2,"size_x":1,"size_y":1}]')
  });
 </script>
 
@@ -10,10 +10,19 @@
       <div data-id="wattmetersolar" data-view="Meter" data-title="Solar" data-min="0" data-max="11000" data-suffix="W"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="wattmetersolar_sum" data-view="Number" data-title="Solar Tagesproduktion" data-moreinfo="Vergleich zum Vortag in kWh"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="wattmeterheating" data-view="Meter" data-title="Heizung" data-min="0" data-max="11000" data-suffix="W"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="wattmeterheating_sum" data-view="Number" data-title="Heizung Tagesverbrauch" data-moreinfo="Vergleich zum Vortag in kWh"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="wattmeterhouse" data-view="Meter" data-title="Haus" data-min="0" data-max="11000" data-suffix="W"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="wattmeterhouse_sum" data-view="Number" data-title="Haus Tagesverbrauch" data-moreinfo="Vergleich zum Vortag in kWh"></div>
     </li>
   </ul>
 </div>
