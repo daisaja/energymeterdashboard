@@ -22,5 +22,5 @@ SCHEDULER.every '5m', :first_in => 0 do |job|
   }
   kwh_last_day = (last_day_sum/1000)
 
-  send_event('wattmeterhouse_sum',   { current: kwh_day, last: kwh_last_day })
+  send_event('wattmeternet_sum',   { current: kwh_day, last: kwh_last_day })
 end
