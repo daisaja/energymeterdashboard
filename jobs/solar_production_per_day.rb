@@ -1,7 +1,7 @@
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 #SCHEDULER.every '1m', :first_in => 0 do |job|
 SCHEDULER.every '1m', :first_in => 0 do |job|
-  url_sma = 'https://sma3006861935.local/dyn/getDashLogger.json'
+  url_sma = 'https://192.168.178.98/dyn/getDashLogger.json'
   response = HTTParty.post(url_sma, :verify => false)
 
   watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7000']['1']
