@@ -16,7 +16,6 @@ COPY ./assets ./assets
 COPY ./config.ru .
 COPY ./dashboards ./dashboards
 COPY ./jobs ./jobs
-COPY ./lib ./lib
 COPY ./public ./public
 COPY ./widgets ./widgets
 
