@@ -1,0 +1,37 @@
+
+.widget-klimato
+  h1
+    display: inline-block
+    vertical-align: top
+    font-size: 80px
+    &:after
+      content: "\00b0"
+
+  h2
+    display: inline-block
+    vertical-align: bottom
+    font-size: 100px
+    font-family: "Climacons-Font"
+
+  h3
+    width: 100%
+    text-transform: uppercase
+    font-size: 15px
+    letter-spacing: 2px
+
+  .top
+    width: 50%
+    border-top: 2px solid
+
+  .center
+    border-right: 2px solid
+
+//  .updated-at
+
+// climacons
+
+$climacons: "\e037" "\e009" "\e009" "\e025" "\e025" "\e00f" "\e015" " \e00f" "\e00c" "\e00c" "\e00f" "\e006" "\e006" "\e015" "\e018" "\e018" "\e018" "\e012" "\e00f" "\e01e" "\e01b" "\e01e" "\e01e" "\e01e" "\e021" "\e01b" "\e000" "\e002" "\e001" "\e002" "\e001" "\e02d" "\e028" "\e001" "\e002" "\e012" "\e028" "\e025" "\e025" "\e025" "\e006" "\e036" "\e036" "\e036" "\e000" "\e025" "\e036" "\e025"
+
+@for $index from 0 through 47
+  .klimato-#{$index}:before
+    content: nth($climacons, $index + 1)
