@@ -1,6 +1,6 @@
 Check out http://smashing.github.io/smashing for more information.
 
-Please note: in order to run klimato wether widget you need to register for yahoo wether api here: https://developer.yahoo.com/weather/
+Please note: in order to run klimato weather widget you need to register for yahoo weather api here: https://developer.yahoo.com/weather/
 
 Afterwards you need to expose your appid, customerKey and customerSecrets as environment variables like this:
 
