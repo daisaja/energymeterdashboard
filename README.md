@@ -23,3 +23,5 @@ Run docker with:
 $ docker run -p3030:3030 --env-file .env id_of_your_container
 
 See for further explanations: https://vsupalov.com/docker-build-time-env-values/
+
+v1.1
