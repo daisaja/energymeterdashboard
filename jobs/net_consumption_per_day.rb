@@ -18,7 +18,7 @@ def calculate_sum_of_watts(data_url_to_fetch_from)
   array = response_with_data.parsed_response['val']
   last_day_sum = 0
   array.each { |a|
-    last_day_sum += a.to_i
+    last_day_sum += a.to_f
   }
-  return (last_day_sum.to_f/1000).round(1)
+  return (last_day_sum/1000).round(1)
 end
