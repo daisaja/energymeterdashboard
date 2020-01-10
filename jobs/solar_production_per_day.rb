@@ -16,5 +16,5 @@ end
 def kwh_per_day(watts_per_time_unit)
   last_watts_value = watts_per_time_unit.last['v']
   first_watts_value = watts_per_time_unit.first['v']
-  return (last_watts_value - first_watts_value) / 1000
+  return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
 end
