@@ -1,3 +1,5 @@
+require 'date'
+
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 #SCHEDULER.every '1m', :first_in => 0 do |job|
 SCHEDULER.every '1m', :first_in => 0 do |job|
@@ -6,22 +8,43 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
 
   # rolling 24h window also including values from last day ...
   watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7000']['1']
-  kwh_current_day = kwh_per_day(watts_per_time_unit)
+  kwh_current_day = kwh_current_day(watts_per_time_unit)
   #puts "current: #{kwh_current_day}"
 
   # two values from json
   watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7020']['1']
-  kwh_last_day = kwh_per_day(watts_per_time_unit)
+  kwh_last_day = kwh_last_day(watts_per_time_unit)
   #puts "last: #{kwh_last_day}"
 
   send_event('wattmetersolar_sum', { current: kwh_current_day, last: kwh_last_day})
 end
 
-def kwh_per_day(watts_per_time_unit)
+def kwh_current_day(watts_per_time_unit)
+  # current seconds
+  today_seconds = 0
+  t = Time.now
+  today = Time.new(t.year, t.month, t.day)
+  puts today.strftime('%s')
+  today_seconds = today.strftime('%s').to_i
+
+  # get first data set for current milliseconds
+  first_watts_value = 0
+  watts_per_time_unit.each do |value|
+    # find first data of the day by seconds since 1970
+    if value['t'].to_i >= today_seconds
+      first_watts_value = value['v'].to_i
+      break
+    end
+  end
+
+  #puts first_watts_value
   last_watts_value = watts_per_time_unit.last['v']
   #puts last_watts_value
+  return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
+end
 
+def kwh_last_day(watts_per_time_unit)
+  last_watts_value = watts_per_time_unit.last['v']
   first_watts_value = watts_per_time_unit.first['v']
-  #puts first_watts_value
   return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
 end
