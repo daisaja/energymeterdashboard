@@ -9,7 +9,6 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
   # rolling 24h window also including values from last day ...
   watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7000']['1']
   kwh_current_day = kwh_current_day(watts_per_time_unit)
-  #puts "current: #{kwh_current_day}"
 
   # two values from json
   watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7020']['1']
@@ -24,7 +23,6 @@ def kwh_current_day(watts_per_time_unit)
   today_seconds = 0
   t = Time.now
   today = Time.new(t.year, t.month, t.day)
-  puts today.strftime('%s')
   today_seconds = today.strftime('%s').to_i
 
   # get first data set for current milliseconds
