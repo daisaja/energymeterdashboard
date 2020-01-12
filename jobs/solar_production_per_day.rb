@@ -19,13 +19,13 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
 end
 
 def kwh_current_day(watts_per_time_unit)
-  # current seconds
+  # current seconds of the day
   today_seconds = 0
   t = Time.now
   today = Time.new(t.year, t.month, t.day)
   today_seconds = today.strftime('%s').to_i
 
-  # get first data set for current milliseconds
+  # get first data set for current date in seconds
   first_watts_value = 0
   watts_per_time_unit.each do |value|
     # find first data of the day by seconds since 1970

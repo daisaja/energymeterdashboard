@@ -1,7 +1,7 @@
 require 'httparty'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
-SCHEDULER.every '5m', :first_in => 0 do |job|
+SCHEDULER.every '1m', :first_in => 0 do |job|
   # Verbrauch aktueller Tag
   url_current_day_count = 'http://192.168.178.10/V?d=0&f=j'
   kwh_current_day = calculate_sum_of_watts(url_current_day_count)
