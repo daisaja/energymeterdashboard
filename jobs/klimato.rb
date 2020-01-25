@@ -5,8 +5,6 @@ require "net/https"
 require 'openssl'
 require "erb"
 
-
-
 # WOEID for location:
 # http://woeid.rosselliot.co.nz
 woeid  = 686990
