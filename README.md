@@ -8,7 +8,6 @@ $ export EM_APP_ID=my_app_id_value
 $ export EM_CONSUMER_KEY=my_customer_key_value
 $ esport EM_CONSUMER_SECRET=my_customer_secret_value
 
-
 In order to run the docker container you need to put variables into a env-file like this:
 
 $ touch .env
@@ -23,5 +22,10 @@ Run docker with:
 $ docker run -p3030:3030 --env-file .env id_of_your_container
 
 See for further explanations: https://vsupalov.com/docker-build-time-env-values/
+
+For local build and test also possible:
+
+docker build --build-arg EM_APP_ID=my_app_id_value EM_CONSUMER_KEY=my_customer_key_value EM_CONSUMER_SECRET=my_customer_secret_value
+
 
 SMA firmware: 2.13.33.R
