@@ -9,7 +9,7 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
   # Verbrauch gestriger Tag
   url_last_day_count = 'http://192.168.178.10/V?d=1&f=j'
   kwh_last_day = calculate_sum_of_watts(url_last_day_count)
-  send_event('wattmeternet_sum',   { current: kwh_current_day, last: kwh_last_day })
+  send_event('wattmetergrid_sum',   { current: kwh_current_day, last: kwh_last_day })
 end
 
 def calculate_sum_of_watts(data_url_to_fetch_from)

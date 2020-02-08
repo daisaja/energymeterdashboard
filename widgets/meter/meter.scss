@@ -6,7 +6,8 @@ $background-color:  #9c4274;
 $title-color:       rgba(255, 255, 255, 0.7);
 $moreinfo-color:    rgba(255, 255, 255, 0.3);
 
-$meter-background:  darken($background-color, 15%);
+//$meter-background:  darken($background-color, 15%);
+$meter-background:  darken(#616161, 15%);
 
 // ----------------------------------------------------------------------------
 // Widget-meter styles
