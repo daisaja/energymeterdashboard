@@ -1,22 +1,22 @@
-<script type='text/javascript'>
- $(function() {
-   Dashing.gridsterLayout('[{"col":1,"row":1,"size_x":1,"size_y":1},{"col":1,"row":2,"size_x":1,"size_y":1},{"col":2,"row":1,"size_x":1,"size_y":1},{"col":2,"row":2,"size_x":1,"size_y":1},{"col":3,"row":1,"size_x":1,"size_y":1}]')
- });
-</script>
-
 <div class="gridster">
   <ul>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="wattmetersolar" data-view="Meter" data-title="Solar" data-min="0" data-max="11000" data-suffix="W"></div>
+      <div data-id="wattmetersolar" data-view="Meter" data-title="Solar" data-min="0" data-max="11000" data-suffix="W" style="background-color:#00c261;"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="wattmetersolar_sum" data-view="Number" data-title="Solar Tagesproduktion" data-moreinfo="Vergleich zum Vortag in kWh"></div>
+      <div data-id="wattmeter_grid_supply" data-view="Meter" data-title="Stromnetz" data-min="0" data-max="11000" data-suffix="W" style="background-color:#e03f3f;"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="wattmeternet" data-view="Meter" data-title="Stromnetz" data-min="0" data-max="11000" data-suffix="W"></div>
+      <div data-id="wattmeter_grid_feed" data-view="Meter" data-title="Einspeisung" data-min="0" data-max="11000" data-suffix="W" style="background-color:#f28900;"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="wattmeternet_sum" data-view="Number" data-title="Stromnetz Tagesbezug" data-moreinfo="Vergleich zum Vortag in kWh"></div>
+      <div data-id="wattmeter_house_power_consumption" data-view="Meter" data-title="Verbrauch" data-min="0" data-max="11000" data-suffix="W" style="background-color:#666666;"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="wattmetersolar_sum" data-view="Number" data-title="Solar Tagesproduktion" data-moreinfo="Vergleich zum Vortag in kWh" style="background-color:#008744;"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="wattmetergrid_sum" data-view="Number" data-title="Stromnetz Tagesbezug" data-moreinfo="Vergleich zum Vortag in kWh" style="background-color:#a12d2d;"></div>
     </li>
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="klimato" data-view="Klimato"></div>
