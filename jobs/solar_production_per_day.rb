@@ -23,7 +23,7 @@ def kwh_current_day(watts_per_time_unit)
   today_seconds = 0
   t = Time.now
   today = Time.new(t.year, t.month, t.day)
-  today_seconds = today.strftime('%s').to_i
+  today_seconds = today.strftime('%s').to_i  # get milliseconds for the day starting from 00:00:00
 
   # get first data set for current date in seconds
   first_watts_value = 0

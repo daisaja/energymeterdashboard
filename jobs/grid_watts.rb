@@ -3,9 +3,9 @@ require 'httparty'
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 SCHEDULER.every '1s', :first_in => 0 do |job|
   # Augenblickverbrauch
-  uuid_grid_supply = 'c6ada300-4a00-11ea-99d0-7577b1612d91'
+  uuid_grid_supply = 'c6ada300-4a00-11ea-99d0-7577b1612d91' # OBIS: 255-255:1.7.0*255
   # Augenblickeinspeisung
-  uuid_grid_feet = 'aface870-4a00-11ea-aa3c-8f09c95f5b9c'
+  uuid_grid_feet = 'aface870-4a00-11ea-aa3c-8f09c95f5b9c' # OBIS: 255-255::2.7.0*255
 
   url_overview = 'http://192.168.178.102:8081/'
   response = HTTParty.get(url_overview)
