@@ -32,7 +32,7 @@ def find_current_grid_watts(uuid, data)
      break
    end
  end
- return current_grid_watts * 1000
+ return (current_grid_watts * 1000).round(0)
 end
 
 def current_solar_production()
