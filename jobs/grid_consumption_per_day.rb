@@ -23,11 +23,8 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
   grid_supply = find_current_grid_kwh(uuid_grid_supply_count, response.parsed_response['data'])
   grid_feed = find_current_grid_kwh(uuid_grid_feet_count, response.parsed_response['data'])
 
-  $kwh_supply_current_day = calculate_delta_supply(grid_supply.to_f)
-  puts $kwh_supply_current_day
-
-  $kwh_feed_current_day = calculate_delta_feed(grid_feed.to_f)
-  puts $kwh_feed_current_day
+  $kwh_supply_current_day = calculate_delta_supply(grid_supply)
+  $kwh_feed_current_day = calculate_delta_feed(grid_feed)
 
   send_event('meter_grid_supply_sum',   { current: $kwh_supply_current_day, last: $kwh_supply_last_day })
   send_event('meter_grid_feed_sum',   { current: $kwh_feed_current_day, last: $kwh_feed_last_day })
@@ -57,7 +54,7 @@ def calculate_delta_feed(meter_count_now)
     $kwh_feed_last_day = $kwh_feed_current_day
   end
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return meter_count_now - $meter_count_feed_yesterday
+  return (meter_count_now - $meter_count_feed_yesterday)
 end
 
 def is_new_day()
