@@ -11,7 +11,7 @@ $kwh_feed_current_day = 0.0
 $meter_count_feed_yesterday = 0.0
 
 
-SCHEDULER.every '1s', :first_in => 0 do |job|
+SCHEDULER.every '5s', :first_in => 0 do |job|
   # Zählerstand Bezug
   uuid_grid_supply_count = '007aeef0-4a01-11ea-8773-6bda87ed0b9a' # OBIS: 255-255::1.8.0*255
   # Zählerstand Einspeisung
@@ -62,20 +62,14 @@ end
 
 def is_new_day()
   t = Time.now
-  now = Time.now.strftime('%s').to_i # aktuelle Zeit in Millisekunden
+  now = Time.now.strftime('%s').to_i # aktuelle Zeit in Sekunden
   today = Time.new(t.year, t.month, t.day)
-  today_seconds_at_midnight = today.strftime('%s').to_i  # get milliseconds for the day starting from 00:00:00
-  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 3000 # Zeitfenster 30s
-
-  puts now
-  puts today_seconds_at_midnight
-  puts today_seconds_at_midnight_plus_30
+  today_seconds_at_midnight = today.strftime('%s').to_i  # Sekunden für den Begin des Tages um 00:00:00
+  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 30 # Zeitfenster 30s
 
   if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_30
-    puts 'wechsel'
     true
   else
-    puts 'kein wechsel'
     false
   end
 end
