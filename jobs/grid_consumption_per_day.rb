@@ -52,7 +52,7 @@ def calculate_delta_supply(meter_count_now)
     $kwh_supply_last_day = $kwh_supply_current_day
   end
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return meter_count_now - $meter_count_supply_yesterday
+  return (meter_count_now - $meter_count_supply_yesterday).round(1)
 end
 
 # Einspeisung
@@ -63,7 +63,7 @@ def calculate_delta_feed(meter_count_now)
     $kwh_feed_last_day = $kwh_feed_current_day
   end
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return (meter_count_now - $meter_count_feed_yesterday)
+  return (meter_count_now - $meter_count_feed_yesterday).round(1)
 end
 
 def is_new_day()
