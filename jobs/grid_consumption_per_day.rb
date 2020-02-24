@@ -22,11 +22,21 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
   grid_supply = find_current_grid_kwh(uuid_grid_supply_count, response.parsed_response['data'])
   grid_feed = find_current_grid_kwh(uuid_grid_feet_count, response.parsed_response['data'])
 
+  init_job_after_start(grid_supply, grid_feed)
+
   $kwh_supply_current_day = calculate_delta_supply(grid_supply)
   $kwh_feed_current_day = calculate_delta_feed(grid_feed)
 
   send_event('meter_grid_supply_sum',   { current: $kwh_supply_current_day, last: $kwh_supply_last_day })
   send_event('meter_grid_feed_sum',   { current: $kwh_feed_current_day, last: $kwh_feed_last_day })
+end
+
+# Init values after restart of service - little hack to count kWhs after start from zero instaed of showing meter count in total
+def init_job_after_start(grid_supply, grid_feed)
+  if ($meter_count_supply_yesterday == 0.0 and $meter_count_feed_yesterday == 0.0)
+    $meter_count_supply_yesterday = grid_supply
+    $meter_count_feed_yesterday = grid_feed
+  end
 end
 
 # Zählerstand um 00:00 Uhr:           580.7 (meter_count_feed_at_midnight)
