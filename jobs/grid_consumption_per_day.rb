@@ -1,15 +1,14 @@
 require 'httparty'
 require_relative 'meter_helper/grid_meter_client'
 
-# TODO Needs to be switched to VZLogger currently youless datalogger used
+# TODO Needs to be intialized on first job run with current values or with stored values
 $kwh_supply_last_day = 0.0
 $kwh_supply_current_day = 0.0
-$meter_count_supply_yesterday = 1.0
+$meter_count_supply_yesterday = 0.0
 
 $kwh_feed_last_day = 0.0
 $kwh_feed_current_day = 0.0
 $meter_count_feed_yesterday = 0.0
-
 
 SCHEDULER.every '5s', :first_in => 0 do |job|
   # Zählerstand Bezug
