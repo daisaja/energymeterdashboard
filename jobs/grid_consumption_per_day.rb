@@ -40,36 +40,42 @@ end
 
 # Bezug
 def calculate_delta_supply(meter_count_now)
-  t = Time.now
-  now = Time.now.strftime('%s').to_i # aktuelle Zeit in Millisekunden
-  today = Time.new(t.year, t.month, t.day)
-  today_seconds_at_midnight = today.strftime('%s').to_i  # get milliseconds for the day starting from 00:00:00
-  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 30000 # Zeitfenster 30s
-
   # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
-  if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_30
+  if is_new_day()
     $meter_count_supply_yesterday = meter_count_now
     $kwh_supply_last_day = $kwh_supply_current_day
   end
-
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
   return meter_count_now - $meter_count_supply_yesterday
 end
 
 # Einspeisung
 def calculate_delta_feed(meter_count_now)
+  # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
+  if is_new_day()
+    $meter_count_feed_yesterday = meter_count_now
+    $kwh_feed_last_day = $kwh_feed_current_day
+  end
+  # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
+  return meter_count_now - $meter_count_feed_yesterday
+end
+
+def is_new_day()
   t = Time.now
   now = Time.now.strftime('%s').to_i # aktuelle Zeit in Millisekunden
   today = Time.new(t.year, t.month, t.day)
   today_seconds_at_midnight = today.strftime('%s').to_i  # get milliseconds for the day starting from 00:00:00
-  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 30000 # Zeitfenster 30s
+  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 3000 # Zeitfenster 30s
 
-  # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
+  puts now
+  puts today_seconds_at_midnight
+  puts today_seconds_at_midnight_plus_30
+
   if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_30
-    $meter_count_feed_yesterday = meter_count_now
-    $kwh_feed_last_day = $kwh_feed_current_day
+    puts 'wechsel'
+    true
+  else
+    puts 'kein wechsel'
+    false
   end
-
-  # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return meter_count_now - $meter_count_feed_yesterday
 end
