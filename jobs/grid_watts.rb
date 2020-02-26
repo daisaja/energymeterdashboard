@@ -1,7 +1,7 @@
 require 'httparty'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
-SCHEDULER.every '1s', :first_in => 0 do |job|
+SCHEDULER.every '2s', :first_in => 0 do |job|
   # Augenblickverbrauch
   uuid_grid_supply = 'c6ada300-4a00-11ea-99d0-7577b1612d91' # OBIS: 255-255:1.7.0*255
   # Augenblickeinspeisung
