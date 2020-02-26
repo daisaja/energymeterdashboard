@@ -71,9 +71,14 @@ def is_new_day()
   now = Time.now.strftime('%s').to_i # aktuelle Zeit in Sekunden
   today = Time.new(t.year, t.month, t.day)
   today_seconds_at_midnight = today.strftime('%s').to_i  # Sekunden für den Begin des Tages um 00:00:00
-  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 30 # Zeitfenster 30s
+  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 60 # Zeitfenster 30s
+
+  #puts today_seconds_at_midnight_plus_30
+  #puts today_seconds_at_midnight
+  #puts now
 
   if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_30
+    puts 'RESET true'
     true
   else
     false
