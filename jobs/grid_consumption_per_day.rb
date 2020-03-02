@@ -45,25 +45,31 @@ end
 # gestern:                              6.9 (kwh_feed_last_day)
 
 # Bezug
-def calculate_delta_supply(meter_count_now)
+def calculate_delta_supply(meter_count_supply_now)
   # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
   if is_new_day()
-    $meter_count_supply_yesterday = meter_count_now
+    $meter_count_supply_yesterday = meter_count_supply_now
     $kwh_supply_last_day = $kwh_supply_current_day
   end
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return (meter_count_now - $meter_count_supply_yesterday).round(1)
+  return (meter_count_supply_now - $meter_count_supply_yesterday).round(1)
 end
 
 # Einspeisung
-def calculate_delta_feed(meter_count_now)
+def calculate_delta_feed(meter_count_feed_now)
+  puts Time.now.strftime('%s')
   # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
   if is_new_day()
-    $meter_count_feed_yesterday = meter_count_now
+    puts 'new day'
+    $meter_count_feed_yesterday = meter_count_feed_now
     $kwh_feed_last_day = $kwh_feed_current_day
+    puts "meter meter_count_feed_now #{meter_count_feed_now}"
+    puts "meter meter_count_feed_yesterday #{$meter_count_feed_yesterday}"
+    puts "meter kwh_feed_last_day #{$kwh_feed_last_day}"
+    puts "meter kwh_feed_current_day #{$kwh_feed_current_day}"
   end
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
-  return (meter_count_now - $meter_count_feed_yesterday).round(1)
+  return (meter_count_feed_now - $meter_count_feed_yesterday).round(1)
 end
 
 def is_new_day()
@@ -71,16 +77,15 @@ def is_new_day()
   now = Time.now.strftime('%s').to_i # aktuelle Zeit in Sekunden
   today = Time.new(t.year, t.month, t.day)
   today_seconds_at_midnight = today.strftime('%s').to_i  # Sekunden für den Begin des Tages um 00:00:00
-  today_seconds_at_midnight_plus_30 = today_seconds_at_midnight + 60 # Zeitfenster 30s
+  today_seconds_at_midnight_plus_360 = today_seconds_at_midnight + 360 # Zeitfenster 30s
 
-  #puts today_seconds_at_midnight_plus_30
-  #puts today_seconds_at_midnight
-  #puts now
+  #puts "today_seconds_at_midnight_plus_30 = " + today_seconds_at_midnight_plus_30.to_s
+  #puts "today_seconds_at_midnight = " + today_seconds_at_midnight.to_s
+  #puts "now = " + now.to_s
 
-  if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_30
-    puts 'RESET true'
-    true
+  if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_360
+    return true
   else
-    false
+    return false
   end
 end
