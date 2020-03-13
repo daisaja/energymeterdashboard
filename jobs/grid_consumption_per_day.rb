@@ -57,7 +57,6 @@ end
 
 # Einspeisung
 def calculate_delta_feed(meter_count_feed_now)
-  puts Time.now.strftime('%s')
   # Wenn ein neuer Tag anbricht merke dir den Zählerstand vom Begin des Tages und speichere den Vorbrauch vom Vortag
   if is_new_day()
     puts 'new day'
@@ -73,17 +72,10 @@ def calculate_delta_feed(meter_count_feed_now)
 end
 
 def is_new_day()
-  t = Time.now
-  now = Time.now.strftime('%s').to_i # aktuelle Zeit in Sekunden
-  today = Time.new(t.year, t.month, t.day)
-  today_seconds_at_midnight = today.strftime('%s').to_i  # Sekunden für den Begin des Tages um 00:00:00
-  today_seconds_at_midnight_plus_360 = today_seconds_at_midnight + 360 # Zeitfenster 30s
-
-  #puts "today_seconds_at_midnight_plus_30 = " + today_seconds_at_midnight_plus_30.to_s
-  #puts "today_seconds_at_midnight = " + today_seconds_at_midnight.to_s
-  #puts "now = " + now.to_s
-
-  if now > today_seconds_at_midnight and now < today_seconds_at_midnight_plus_360
+  now = Time.now
+  midnight = Time.new(now.year, now.month, now.day)
+  _60s_after_midnight = midnight + 60 # Zeitfenster 60s
+  if now > midnight and now < _60s_after_midnight
     return true
   else
     return false
