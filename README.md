@@ -29,3 +29,11 @@ docker build --build-arg EM_APP_ID=my_app_id_value EM_CONSUMER_KEY=my_customer_k
 
 
 SMA firmware: 2.13.33.R
+
+# Copy ssd image
+
+sudo fdisk -l
+sudo mount | grep sdc
+sudo umount /dev/sdc1
+
+~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 4G | sudo dd of=/dev/sdc bs=4096
