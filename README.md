@@ -36,4 +36,4 @@ sudo fdisk -l
 sudo mount | grep sdc
 sudo umount /dev/sdc1
 
-~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 4G | sudo dd of=/dev/sdc bs=4096
+~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 8G | sudo dd of=/dev/sdc bs=1M
