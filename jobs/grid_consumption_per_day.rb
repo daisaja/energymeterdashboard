@@ -70,14 +70,3 @@ def calculate_delta_feed(meter_count_feed_now)
   # Berechne verbrauchte kWh anhand der Differenz der Zählerstände
   return (meter_count_feed_now - $meter_count_feed_yesterday).round(1)
 end
-
-def is_new_day()
-  now = Time.now
-  midnight = Time.new(now.year, now.month, now.day)
-  _60s_after_midnight = midnight + 60 # Zeitfenster 60s
-  if now > midnight and now < _60s_after_midnight
-    return true
-  else
-    return false
-  end
-end
