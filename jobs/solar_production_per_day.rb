@@ -41,13 +41,14 @@ def kwh_current_day(watts_per_time_unit)
   return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
 end
 
+# Get produced solar watts from last day
 def kwh_last_day(watts_per_time_unit)
-  last_watts_value = watts_per_time_unit.last['v']
-  first_watts_value = watts_per_time_unit.first['v']
+  last_watts_value = watts_per_time_unit.last['v'] # since summer time switch it are last day produced watts
+  first_watts_value = watts_per_time_unit.first['v'] # since summer time switch it is null ...
   return ((last_watts_value - check_for_null_replace_with_zero(first_watts_value)).to_f / 1000).round(1)
 end
 
-  # After switch to summer time one array value is null in the morning (looks like a bug in SMA software) Here is the workaround.
+# After switch to summer time one array value is null in the morning (looks like a bug in SMA software) Here is the workaround.
 def check_for_null_replace_with_zero(value)
   if value == nil
     value = 0
