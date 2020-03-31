@@ -13,8 +13,8 @@ end
 def is_new_day()
   now = Time.now
   midnight = Time.new(now.year, now.month, now.day)
-  _60s_after_midnight = midnight + 60 # Zeitfenster 60s
-  if now > midnight and now < _60s_after_midnight
+  _600s_after_midnight = midnight + 600 # Time window 600s
+  if now > midnight and now < _600s_after_midnight
     return true
   else
     return false
