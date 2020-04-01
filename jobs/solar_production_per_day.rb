@@ -2,7 +2,7 @@ require 'date'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 #SCHEDULER.every '1m', :first_in => 0 do |job|
-SCHEDULER.every '1m', :first_in => 0 do |job|
+SCHEDULER.every '2s', :first_in => 0 do |job|
   url_sma = 'https://192.168.178.98/dyn/getDashLogger.json'
   response = HTTParty.post(url_sma, :verify => false)
 
@@ -23,7 +23,7 @@ def kwh_current_day(watts_per_time_unit)
   today_seconds = 0
   t = Time.now
   today = Time.new(t.year, t.month, t.day)
-  today_seconds = today.strftime('%s').to_i  # get milliseconds for the day starting from 00:00:00
+  today_seconds = today.to_i  # get seconds for the day starting from 00:00:00
 
   # get first data set for current date in seconds
   first_watts_value = 0
@@ -38,19 +38,28 @@ def kwh_current_day(watts_per_time_unit)
   #puts first_watts_value
   last_watts_value = watts_per_time_unit.last['v']
   #puts last_watts_value
+
+  #puts (last_watts_value - first_watts_value) / 1000
   return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
 end
 
 # Get produced solar watts from last day
 def kwh_last_day(watts_per_time_unit)
-  last_watts_value = watts_per_time_unit.last['v'] # since summer time switch it are last day produced watts
   first_watts_value = watts_per_time_unit.first['v'] # since summer time switch it is null ...
-  return ((last_watts_value - check_for_null_replace_with_zero(first_watts_value)).to_f / 1000).round(1)
+  last_watts_value = watts_per_time_unit.last['v'] # since summer time switch it are last day produced watts
+
+  first_watts_value = check_for_null_replace_with_zero(first_watts_value)
+  last_watts_value = check_for_null_replace_with_zero(last_watts_value)
+
+  sum = ((last_watts_value - first_watts_value) / 1000).round(1)
+  #puts sum
+  return sum
 end
 
 # After switch to summer time one array value is null in the morning (looks like a bug in SMA software) Here is the workaround.
 def check_for_null_replace_with_zero(value)
-  if value == nil
+  if value.nil?
     value = 0
   end
+  return value
 end
