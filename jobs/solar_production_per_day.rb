@@ -2,7 +2,7 @@ require 'date'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 #SCHEDULER.every '1m', :first_in => 0 do |job|
-SCHEDULER.every '2s', :first_in => 0 do |job|
+SCHEDULER.every '1m', :first_in => 0 do |job|
   url_sma = 'https://192.168.178.98/dyn/getDashLogger.json'
   response = HTTParty.post(url_sma, :verify => false)
 
@@ -35,11 +35,8 @@ def kwh_current_day(watts_per_time_unit)
     end
   end
 
-  #puts first_watts_value
   last_watts_value = watts_per_time_unit.last['v']
-  #puts last_watts_value
 
-  #puts (last_watts_value - first_watts_value) / 1000
   return ((last_watts_value - first_watts_value).to_f / 1000).round(1)
 end
 
@@ -52,7 +49,6 @@ def kwh_last_day(watts_per_time_unit)
   last_watts_value = check_for_null_replace_with_zero(last_watts_value)
 
   sum = ((last_watts_value - first_watts_value) / 1000).round(1)
-  #puts sum
   return sum
 end
 
