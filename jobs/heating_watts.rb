@@ -1,11 +1,6 @@
-require 'httparty'
+require_relative 'meter_helper/heating_meter_client'
 
-# :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 SCHEDULER.every '2s', :first_in => 0 do |job|
-
-  # Augenblickverbrauch
-  url_overview = 'http://192.168.178.10/a?f=j'
-  response = HTTParty.get(url_overview)
-  send_event('wattmeterheating',   { value: response.parsed_response['pwr'] })
-
+  heating_measurements = fetch_data_from_heating_meter()
+  send_event('wattmeterheating',   { value: heating_measurements.heating_watts_current})
 end

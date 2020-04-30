@@ -11,13 +11,14 @@ VZ_LOGGER_URL = 'http://192.168.178.102:8081/'
 
 class GridMeasurements
   def initialize(grid_feed_total, grid_feed_per_month, grid_feed_current,
-    grid_supply_total, grid_supply_per_month, grid_supply_current)
+    grid_supply_total, grid_supply_per_month, grid_supply_current, energy_consumption_per_month)
      @grid_feed_total = grid_feed_total
      @grid_feed_per_month = grid_feed_per_month
      @grid_feed_current = grid_feed_current
      @grid_supply_total = grid_supply_total
      @grid_supply_per_month = grid_supply_per_month
      @grid_supply_current = grid_supply_current
+     @energy_consumption_per_month = energy_consumption_per_month
   end
 
   attr_reader :grid_feed_total
@@ -26,6 +27,7 @@ class GridMeasurements
   attr_reader :grid_supply_total
   attr_reader :grid_supply_per_month
   attr_reader :grid_supply_current
+  attr_reader :energy_consumption_per_month
 
   def to_string()
     puts "grid_feed_total: #{@grid_feed_total}"
@@ -34,6 +36,7 @@ class GridMeasurements
     puts "grid_supply_total: #{@grid_supply_total}"
     puts "grid_supply_per_month: #{@grid_supply_per_month}"
     puts "grid_supply_current: #{@grid_supply_current}"
+    puts "energy_consumption_per_month: #{@energy_consumption_per_month}"
   end
 end
 
@@ -48,6 +51,7 @@ def fetch_data_from_grid_meter()
   grid_supply_total= find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
   grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
   grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
+  energy_consumption_per_month = 0.0 # not implemented yet
 
   GridMeasurements.new(
     grid_feed_total,
@@ -55,7 +59,8 @@ def fetch_data_from_grid_meter()
     grid_feed_current,
     grid_supply_total,
     grid_supply_per_month,
-    grid_supply_current
+    grid_supply_current,
+    energy_consumption_per_month
   )
 end
 
