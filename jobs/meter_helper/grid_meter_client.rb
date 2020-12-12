@@ -7,7 +7,9 @@ UUID_GRID_SUPPLY_TOTAL = '007aeef0-4a01-11ea-8773-6bda87ed0b9a' # OBIS: 255-255:
 UUID_GRID_SUPPLY_PER_MONTH = '472573b2-a888-4851-ada9-ffd8cd386001' # OBIS: 255-255:1.9.0*255
 UUID_GRID_SUPPLY_CURRENT = 'c6ada300-4a00-11ea-99d0-7577b1612d91' # OBIS: 255-255:1.7.0*255
 
-VZ_LOGGER_URL = 'http://192.168.178.102:8081/'
+GRID_METER_HOST = ENV['GRID_METER_HOST']
+
+VZ_LOGGER_URL = "http://" + GRID_METER_HOST + ":8081/"
 
 class GridMeasurements
   def initialize(grid_feed_total, grid_feed_per_month, grid_feed_current,
