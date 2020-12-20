@@ -1,6 +1,6 @@
 require 'httparty'
 
-HEATING_METER_HOST=ENV['HEATING_METER_HOST']
+HEATING_METER_HOST = ENV['HEATING_METER_HOST']
 
 YOULESS_VALUES_URL = "http://" + HEATING_METER_HOST + "/a?f=j"
 YOULESS_MONTHS_URL = "http://" + HEATING_METER_HOST + "/V?m=%{month}&?f=j"
@@ -8,6 +8,7 @@ YOULESS_CURRENT_DAY_KWH = "http://" + HEATING_METER_HOST + "/V?d=0&f=j"
 YOULESS_LAST_DAY_KWH = "http://" + HEATING_METER_HOST + "/V?d=1&f=j"
 
 class HeatingMeasurements
+  attr_reader :heating_watts_current, :heating_per_month, :heating_kwh_current_day, :heating_kwh_last_day
   def initialize(heating_watts_current, heating_per_month, heating_kwh_current_day, heating_kwh_last_day)
      @heating_watts_current = heating_watts_current
      @heating_per_month = heating_per_month
@@ -15,16 +16,11 @@ class HeatingMeasurements
      @heating_kwh_last_day = heating_kwh_last_day
   end
 
-  attr_reader :heating_watts_current
-  attr_reader :heating_per_month
-  attr_reader :heating_kwh_current_day
-  attr_reader :heating_kwh_last_day
-
   def to_string()
-    puts "heating_watts_current: #{@heating_watts_current}"
-    puts "heating_per_month: #{@heating_per_month}"
-    puts "heating_kwh_current_day: #{@heating_kwh_current_day}"
-    puts "heating_kwh_last_day: #{@heating_kwh_last_day}"
+    puts "heating_watts_current: #{heating_watts_current}"
+    puts "heating_per_month: #{heating_per_month}"
+    puts "heating_kwh_current_day: #{heating_kwh_current_day}"
+    puts "heating_kwh_last_day: #{heating_kwh_last_day}"
   end
 end
 

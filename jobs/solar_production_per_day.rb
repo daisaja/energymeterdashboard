@@ -3,7 +3,7 @@ require 'date'
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 #SCHEDULER.every '1m', :first_in => 0 do |job|
 SCHEDULER.every '1m', :first_in => 0 do |job|
-  url_sma = "https://" + ENV['SOLAR_METER_HOST'] + "/dyn/getDashLogger.json"
+  url_sma = "https://" + ENV['SOLAR_METER_HOST'] + "/dyn/getDashLogger.json" #TODO refactor and extract logic to solar_meter_client
   response = HTTParty.post(url_sma, :verify => false)
 
   # rolling 24h window also including values from last day ...

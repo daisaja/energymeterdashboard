@@ -6,17 +6,16 @@ SMA_VALUES_URL = "https://" + SOLAR_METER_HOST + "/dyn/getDashValues.json"
 SMA_LOGGER_URL = "https://" + SOLAR_METER_HOST + "/dyn/getDashLogger.json"
 
 class SolarMeasurements
+  attr_reader :solar_watts_current, :solar_watts_per_month
+
   def initialize(solar_watts_current, solar_watts_per_month)
      @solar_watts_current = solar_watts_current
      @solar_watts_per_month = solar_watts_per_month
   end
 
-  attr_reader :solar_watts_current
-  attr_reader :solar_watts_per_month
-
   def to_string()
-    puts "solar_watts_current: #{@solar_watts_current}"
-    puts "solar_watts_per_month: #{@solar_watts_per_month}"
+    puts "solar_watts_current: #{solar_watts_current}"
+    puts "solar_watts_per_month: #{solar_watts_per_month}"
   end
 end
 
