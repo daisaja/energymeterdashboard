@@ -4,7 +4,7 @@ require_relative 'meter_helper/solar_meter_client'
 $solar_peak_of_the_day = 0
 
 SCHEDULER.every '2s', :first_in => 0 do |job|
-  solar_measurements = fetch_data_from_solar_meter()
+  solar_measurements = SolarMeasurements.new()
 
   reset_solar_peak_meter()
   set_solar_current_peak(solar_measurements.solar_watts_current)

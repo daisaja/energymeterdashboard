@@ -3,7 +3,7 @@ require_relative 'meter_helper/heating_meter_client'
 
 SCHEDULER.every '3s' do
   grid_measurements = fetch_data_from_grid_meter()
-  solar_measurements = fetch_data_from_solar_meter()
+  solar_measurements = SolarMeasurements.new()
   heating_measurements = fetch_data_from_heating_meter()
 
   grid_meter_values = {
