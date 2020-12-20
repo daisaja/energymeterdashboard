@@ -12,7 +12,9 @@ GRID_METER_HOST = ENV['GRID_METER_HOST']
 VZ_LOGGER_URL = "http://" + GRID_METER_HOST + ":8081/"
 
 class GridMeasurements
-  attr_reader :grid_feed_total, :grid_feed_per_month, :grid_feed_current, :grid_supply_total, :grid_supply_per_month, :grid_supply_current, :energy_consumption_per_month
+  attr_reader :grid_feed_total, :grid_feed_per_month, :grid_feed_current,
+  :grid_supply_total, :grid_supply_per_month, :grid_supply_current,
+  :energy_consumption_per_month
 
   def initialize(grid_feed_total, grid_feed_per_month, grid_feed_current,
     grid_supply_total, grid_supply_per_month, grid_supply_current, energy_consumption_per_month)
@@ -25,14 +27,15 @@ class GridMeasurements
      @energy_consumption_per_month = energy_consumption_per_month
   end
 
-  def to_string()
-    puts "grid_feed_total: #{grid_feed_total}"
-    puts "grid_feed_per_month: #{grid_feed_per_month}"
-    puts "grid_feed_current: #{grid_feed_current}"
-    puts "grid_supply_total: #{grid_supply_total}"
-    puts "grid_supply_per_month: #{grid_supply_per_month}"
-    puts "grid_supply_current: #{grid_supply_current}"
-    puts "energy_consumption_per_month: #{energy_consumption_per_month}"
+  def to_s()
+    super +
+    " grid_feed_total: #{grid_feed_total}
+    grid_feed_per_month: #{grid_feed_per_month}
+    grid_feed_current: #{grid_feed_current}
+    grid_supply_total: #{grid_supply_total}
+    grid_supply_per_month: #{grid_supply_per_month}
+    grid_supply_current: #{grid_supply_current}
+    energy_consumption_per_month: #{energy_consumption_per_month}"
   end
 end
 

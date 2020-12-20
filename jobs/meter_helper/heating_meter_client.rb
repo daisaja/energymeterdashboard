@@ -16,11 +16,12 @@ class HeatingMeasurements
      @heating_kwh_last_day = heating_kwh_last_day
   end
 
-  def to_string()
-    puts "heating_watts_current: #{heating_watts_current}"
-    puts "heating_per_month: #{heating_per_month}"
-    puts "heating_kwh_current_day: #{heating_kwh_current_day}"
-    puts "heating_kwh_last_day: #{heating_kwh_last_day}"
+  def to_s()
+    super +
+    " heating_watts_current: #{heating_watts_current}
+    heating_per_month: #{heating_per_month}
+    heating_kwh_current_day: #{heating_kwh_current_day}
+    heating_kwh_last_day: #{heating_kwh_last_day}"
   end
 end
 
