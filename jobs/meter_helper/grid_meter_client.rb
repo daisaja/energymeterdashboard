@@ -16,15 +16,8 @@ class GridMeasurements
   :grid_supply_total, :grid_supply_per_month, :grid_supply_current,
   :energy_consumption_per_month
 
-  def initialize(grid_feed_total, grid_feed_per_month, grid_feed_current,
-    grid_supply_total, grid_supply_per_month, grid_supply_current, energy_consumption_per_month)
-     @grid_feed_total = grid_feed_total
-     @grid_feed_per_month = grid_feed_per_month
-     @grid_feed_current = grid_feed_current
-     @grid_supply_total = grid_supply_total
-     @grid_supply_per_month = grid_supply_per_month
-     @grid_supply_current = grid_supply_current
-     @energy_consumption_per_month = energy_consumption_per_month
+  def initialize()
+    fetch_data_from_grid_meter()
   end
 
   def to_s()
@@ -37,30 +30,18 @@ class GridMeasurements
     grid_supply_current: #{grid_supply_current}
     energy_consumption_per_month: #{energy_consumption_per_month}"
   end
-end
 
-def fetch_data_from_grid_meter()
-  response = HTTParty.get(VZ_LOGGER_URL)
-
-  data = response.parsed_response['data']
-
-  grid_feed_total = find_current_grid_kwh(UUID_GRID_FEED_TOTAL, data)
-  grid_feed_per_month = find_current_grid_kwh(UUID_GRID_FEED_PER_MONTH, data)
-  grid_feed_current = find_current_grid_kwh(UUID_GRID_FEED_CURRENT, data)
-  grid_supply_total= find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
-  grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
-  grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
-  energy_consumption_per_month = 0.0 # not implemented yet
-
-  GridMeasurements.new(
-    grid_feed_total,
-    grid_feed_per_month,
-    grid_feed_current,
-    grid_supply_total,
-    grid_supply_per_month,
-    grid_supply_current,
-    energy_consumption_per_month
-  )
+  def fetch_data_from_grid_meter()
+    response = HTTParty.get(VZ_LOGGER_URL)
+    data = response.parsed_response['data']
+    @grid_feed_total = find_current_grid_kwh(UUID_GRID_FEED_TOTAL, data)
+    @grid_feed_per_month = find_current_grid_kwh(UUID_GRID_FEED_PER_MONTH, data)
+    @grid_feed_current = find_current_grid_kwh(UUID_GRID_FEED_CURRENT, data)
+    @grid_supply_total= find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
+    @grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
+    @grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
+    @energy_consumption_per_month = 0.0 # not implemented yet
+  end
 end
 
 def find_current_grid_kwh(uuid, data)
