@@ -4,7 +4,7 @@ require_relative 'meter_helper/heating_meter_client'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 SCHEDULER.every '1m', :first_in => 0 do |job|
-  heating_measurements = fetch_data_from_heating_meter()
+  heating_measurements = HeatingMeasurements.new()
   # Verbrauch aktueller Tag
   kwh_current_day = heating_measurements.heating_kwh_current_day
   # Verbrauch gestriger Tag

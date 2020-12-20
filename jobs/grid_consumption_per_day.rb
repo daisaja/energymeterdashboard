@@ -10,7 +10,7 @@ $kwh_feed_current_day = 0.0
 $meter_count_feed_yesterday = 0.0
 
 SCHEDULER.every '5s', :first_in => 0 do |job|
-  grid_measurements = fetch_data_from_grid_meter()
+  grid_measurements = GridMeasurements.new()
 
   init_job_after_start(grid_measurements.grid_supply_total, grid_measurements.grid_feed_total)
 

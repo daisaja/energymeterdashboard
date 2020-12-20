@@ -2,9 +2,9 @@ require_relative 'meter_helper/grid_meter_client'
 require_relative 'meter_helper/heating_meter_client'
 
 SCHEDULER.every '3s' do
-  grid_measurements = fetch_data_from_grid_meter()
+  grid_measurements = GridMeasurements.new()
   solar_measurements = SolarMeasurements.new()
-  heating_measurements = fetch_data_from_heating_meter()
+  heating_measurements = HeatingMeasurements.new()
 
   grid_meter_values = {
     'grid_supply_per_month' => {label: 'Netzbezug (Monat)' , value: grid_measurements.grid_supply_per_month},

@@ -2,7 +2,7 @@ require_relative 'meter_helper/grid_meter_client'
 
 # :first_in sets how long it takes before the job is first run. In this case, it is run immediately
 SCHEDULER.every '2s', :first_in => 0 do |job|
-  grid_measurements = fetch_data_from_grid_meter()
+  grid_measurements = GridMeasurements.new()
   solar_measurements = SolarMeasurements.new()
 
   grid_supply_current = (grid_measurements.grid_supply_current * 1000).round(0)
