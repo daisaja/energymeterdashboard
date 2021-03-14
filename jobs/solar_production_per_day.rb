@@ -7,11 +7,19 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
   response = HTTParty.post(url_sma, :verify => false)
 
   # rolling 24h window also including values from last day ...
-  watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7000']['1']
+  begin  # "try" block
+    watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7000']['1']
+  rescue # optionally: `rescue Exception => ex`
+      watts_per_time_unit = response.parsed_response['result']['017A-xxxxx26F']['7000']['1']
+  end
   kwh_current_day = kwh_current_day(watts_per_time_unit)
 
   # two values from json
-  watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7020']['1']
+  begin  # "try" block
+    watts_per_time_unit = response.parsed_response['result']['017A-B339126F']['7020']['1']
+  rescue # optionally: `rescue Exception => ex`
+      watts_per_time_unit = response.parsed_response['result']['017A-xxxxx26F']['7020']['1']
+  end
   kwh_last_day = kwh_last_day(watts_per_time_unit)
   #puts "last: #{kwh_last_day}"
 
