@@ -23,6 +23,7 @@ GEM
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2020.1104)
+    minitest (5.14.4)
     multi_json (1.15.0)
     multi_xml (0.6.0)
     mustermann (1.1.1)
@@ -31,6 +32,7 @@ GEM
     rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
+    rake (13.0.3)
     ruby2_keywords (0.0.2)
     rufus-scheduler (3.6.0)
       fugit (~> 1.1, >= 1.1.6)
@@ -78,6 +80,8 @@ PLATFORMS
 DEPENDENCIES
   httparty
   json
+  minitest
+  rake
   smashing
   xml-simple
 

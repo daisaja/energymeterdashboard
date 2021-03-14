@@ -10,3 +10,6 @@ gem 'xml-simple'
 
 # klimato weahter widget
 gem 'json'
+
+gem "minitest"
+gem "rake"
