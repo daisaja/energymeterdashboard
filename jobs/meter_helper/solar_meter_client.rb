@@ -24,7 +24,6 @@ class SolarMeasurements
     begin  # "try" block
       @solar_watts_current = response.parsed_response['result']['017A-B339126F']['6100_40263F00']['1'][0]['val']
     rescue # optionally: `rescue Exception => ex`
-      puts 'Strange SMA error that occurs once a year. Try alternative way ...'
       begin
         @solar_watts_current = response.parsed_response['result']['017A-xxxxx26F']['6100_40263F00']['1'][0]['val']
       rescue
