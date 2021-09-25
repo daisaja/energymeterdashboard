@@ -11,6 +11,7 @@ SCHEDULER.every '2s', :first_in => 0 do |job|
 
   send_event('wattmetersolar', { value: solar_measurements.solar_watts_current })
   send_event('solar_peak_meter', { value: $solar_peak_of_the_day })
+  report_solar(solar_measurements.solar_watts_current)
 end
 
 def reset_solar_peak_meter()
@@ -23,4 +24,14 @@ def set_solar_current_peak(current_watts)
   if $solar_peak_of_the_day < current_watts
     $solar_peak_of_the_day = current_watts
   end
+end
+
+def report_solar(solar_watts_current)
+  reporter = InfluxExporter.new()
+  hash = {
+           name: 'wattmeter_solar',
+           tags: {meter_type: 'solar'},
+           fields: {solar_watts_current: solar_watts_current},
+         }
+  reporter.send_data(hash)
 end
