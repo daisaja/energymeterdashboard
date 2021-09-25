@@ -8,7 +8,7 @@ Afterwards you need to expose your appid, customerKey and customerSecrets as env
 
 $ export EM_APP_ID=my_app_id_value  
 $ export EM_CONSUMER_KEY=my_customer_key_value  
-$ esport EM_CONSUMER_SECRET=my_customer_secret_value  
+$ export EM_CONSUMER_SECRET=my_customer_secret_value  
 
 In order to run the docker container you need to put variables into a env-file like this:
 

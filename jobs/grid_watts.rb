@@ -14,8 +14,19 @@ SCHEDULER.every '2s', :first_in => 0 do |job|
   send_event('wattmeter_grid_supply', { value: grid_supply_current })
   send_event('wattmeter_grid_feed', { value: grid_feed_current })
   send_event('wattmeter_house_power_consumption',   { value: current_consupmtion })
+  report_grid(grid_supply_current, grid_feed_current, current_consupmtion)
 end
 
 def current_consumption(solar_production, grid_supply, grid_feed)
   return solar_production + grid_supply - grid_feed
+end
+
+def report_grid(grid_supply_current, grid_feed_current, current_consupmtion)
+  reporter = InfluxExporter.new()
+  hash = {
+           name: 'wattmeter_grid',
+           tags: {meter_type: 'grid'},
+           fields: {wattmeter_grid_supply: grid_supply_current, wattmeter_grid_feed: grid_feed_current, wattmeter_house_power_consumption: current_consupmtion.to_i},
+         }
+  reporter.send_data(hash)
 end

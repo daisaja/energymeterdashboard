@@ -13,3 +13,5 @@ gem 'json'
 
 gem "minitest"
 gem "rake"
+
+gem "influxdb-client"
