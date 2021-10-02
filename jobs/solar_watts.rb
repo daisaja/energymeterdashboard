@@ -31,7 +31,7 @@ def report_solar(solar_watts_current)
   hash = {
            name: 'wattmeter_solar',
            tags: {meter_type: 'solar'},
-           fields: {solar_watts_current: solar_watts_current},
+           fields: {solar_watts_current: solar_watts_current.to_f},
          }
   reporter.send_data(hash)
 end

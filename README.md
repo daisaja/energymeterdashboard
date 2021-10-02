@@ -29,6 +29,8 @@ For local build and test also possible:
 
 docker build --build-arg EM_APP_ID=my_app_id_value EM_CONSUMER_KEY=my_customer_key_value EM_CONSUMER_SECRET=my_customer_secret_value
 
+docker build -t daisaja/energymeter:latest .
+docker push daisaja/energymeter:latest
 
 SMA firmware: 2.13.33.R / 3.10.10.R
 
