@@ -1,4 +1,4 @@
-
+[![Docker Image CI](https://github.com/daisaja/energymeterdashboard/actions/workflows/docker.yml/badge.svg)](https://github.com/daisaja/energymeterdashboard/actions/workflows/docker.yml)
 
 Check out http://smashing.github.io/smashing for more information.
 
