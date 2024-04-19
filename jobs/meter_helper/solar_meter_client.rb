@@ -2,8 +2,8 @@ require 'httparty'
 
 
 SOLAR_METER_HOST = ENV['SOLAR_METER_HOST']
-SMA_VALUES_URL = "https://" + SOLAR_METER_HOST + "/dyn/getDashValues.json"
-SMA_LOGGER_URL = "https://" + SOLAR_METER_HOST + "/dyn/getDashLogger.json"
+SMA_VALUES_URL = "https://#{SOLAR_METER_HOST}/dyn/getDashValues.json"
+SMA_LOGGER_URL = "https://#{SOLAR_METER_HOST}/dyn/getDashLogger.json"
 
 class SolarMeasurements
   attr_reader :solar_watts_current, :solar_watts_per_month

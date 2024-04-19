@@ -15,3 +15,6 @@ gem "minitest"
 gem "rake"
 
 gem "influxdb-client"
+
+# graphql client for tibber
+gem "graphql-client"
