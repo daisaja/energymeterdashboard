@@ -1,6 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    activesupport (6.1.7.6)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      tzinfo (~> 2.0)
+      zeitwerk (~> 2.3)
     coffee-script (2.4.1)
       coffee-script-source
       execjs
@@ -15,9 +21,15 @@ GEM
     fugit (1.8.1)
       et-orbi (~> 1, >= 1.2.7)
       raabro (~> 1.4)
+    graphql (2.0.26)
+    graphql-client (0.18.0)
+      activesupport (>= 3.0)
+      graphql
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
+    i18n (1.14.1)
+      concurrent-ruby (~> 1.0)
     influxdb-client (2.9.0)
     json (2.6.3)
     mini_mime (1.1.2)
@@ -72,11 +84,13 @@ GEM
       concurrent-ruby (~> 1.0)
     xml-simple (1.1.9)
       rexml
+    zeitwerk (2.6.11)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  graphql-client
   httparty
   influxdb-client
   json
