@@ -43,7 +43,8 @@ GEM
     rack-protection (2.2.4)
       rack
     rake (13.0.6)
-    rexml (3.2.5)
+    rexml (3.2.8)
+      strscan (>= 3.0.9)
     ruby2_keywords (0.0.5)
     rufus-scheduler (3.8.2)
       fugit (~> 1.1, >= 1.1.6)
@@ -74,6 +75,7 @@ GEM
     sprockets (4.2.0)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
+    strscan (3.1.0)
     thin (1.8.1)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
