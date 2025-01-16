@@ -1,17 +1,19 @@
 require_relative 'meter_helper/grid_meter_client'
 require_relative 'meter_helper/solar_meter_client'
+require_relative 'meter_helper/opendtu_meter_client'
 
 $solar_peak_of_the_day = 0
 
 SCHEDULER.every '2s', :first_in => 0 do |job|
   solar_measurements = SolarMeasurements.new()
+  opendtu_measures = OpenDTUMeterClient.new()
 
   reset_solar_peak_meter()
   set_solar_current_peak(solar_measurements.solar_watts_current)
 
-  send_event('wattmetersolar', { value: solar_measurements.solar_watts_current })
+  send_event('wattmetersolar', { value: solar_measurements.solar_watts_current + opendtu_measures.power_watts })
   send_event('solar_peak_meter', { value: $solar_peak_of_the_day })
-  report_solar(solar_measurements.solar_watts_current)
+  report_solar(solar_measurements.solar_watts_current + opendtu_measures.power_watts)
 end
 
 def reset_solar_peak_meter()
