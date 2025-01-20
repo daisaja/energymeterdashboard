@@ -20,14 +20,14 @@ class InfluxExporter
       precision: InfluxDB2::WritePrecision::NANOSECOND, use_ssl: false)
      
       # with ssl
-   #@influx_client = InfluxDB2::Client.new(INFLUXDB_URL, INFLUXDB_TOKEN,
+   #@influx_client = InfluxDB2::Client.new(INFLUXDB_REMOTE_URL, INFLUXDB_REMOTE_TOKEN,
       # precision: InfluxDB2::WritePrecision::NANOSECOND, use_ssl: true)
   end
 
   def send_data(hash)
       write_api = @influx_client.create_write_api
       hash.merge({time: Time.now})
-      #puts "!!! Influx data: #{hash}\n bucket: #{INFLUXDB_BUCKET}\n org: #{INFLUXDB_ORG}"
+      #puts "!!! Influx data: #{hash}\n bucket: #{INFLUXDB_BUCKET}\n org: #{INFLUXDB_REMOTE_ORG}"
       write_api.write(data: hash, bucket: INFLUXDB_BUCKET, org: INFLUXDB_ORG)
   end
 end
