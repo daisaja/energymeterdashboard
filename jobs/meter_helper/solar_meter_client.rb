@@ -19,7 +19,7 @@ class SolarMeasurements
   end
 
   def fetch_data_from_solar_meter()
-    response = HTTParty.post(SMA_VALUES_URL, :verify => false) #without ssl check
+    response = HTTParty.post(SMA_VALUES_URL, verify: false) #without ssl check
 
     begin  # "try" block
       @solar_watts_current = response.parsed_response['result']['017A-B339126F']['6100_40263F00']['1'][0]['val']

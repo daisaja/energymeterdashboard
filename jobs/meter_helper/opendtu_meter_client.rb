@@ -14,9 +14,9 @@ class OpenDTUMeterClient
     begin
       response = HTTParty.get(@opendtu_url)
 
-      @power_watts = response.parsed_response['total']['Power']['v'].to_f
-      @yield_day = response.parsed_response['total']['YieldDay']['v'].to_f
-      @yield_total = response.parsed_response['total']['YieldTotal']['v'].to_f
+      @power_watts = response.parsed_response['total']['Power']['v'].to_f.round(0)
+      @yield_day = response.parsed_response['total']['YieldDay']['v'].to_f.round(0)
+      @yield_total = response.parsed_response['total']['YieldTotal']['v'].to_f.round(0)
     rescue => e
       puts "Error while retrieving OpenDTU data: #{e.message}"
       @power_watts = 0.0
