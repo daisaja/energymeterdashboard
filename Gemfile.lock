@@ -45,9 +45,10 @@ GEM
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    graphql (2.4.4)
+    graphql (2.4.13)
       base64
       fiber-storage
+      logger
     graphql-client (0.24.0)
       activesupport (>= 3.0)
       graphql (>= 1.13.0)
