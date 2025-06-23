@@ -37,6 +37,14 @@ SMA firmware: 2.13.33.R / 3.10.10.R
 # Copy ssd image
 
 sudo fdisk -l
+
+```mermaid
+  graph TD;
+      A-->B;
+      A-->C;
+      B-->D;
+      C-->D;
+```
 sudo mount | grep sdc
 sudo umount /dev/sdc1
 
