@@ -38,6 +38,12 @@ SMA firmware: 2.13.33.R / 3.10.10.R
 
 sudo fdisk -l
 
+sudo mount | grep sdc
+sudo umount /dev/sdc1
+
+~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 8G | sudo dd of=/dev/sdc bs=1M
+
+
 ```mermaid
   graph TD;
       A-->B;
@@ -45,7 +51,3 @@ sudo fdisk -l
       B-->D;
       C-->D;
 ```
-sudo mount | grep sdc
-sudo umount /dev/sdc1
-
-~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 8G | sudo dd of=/dev/sdc bs=1M
