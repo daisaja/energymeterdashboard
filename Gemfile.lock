@@ -72,7 +72,7 @@ GEM
     rack-protection (2.2.4)
       rack
     rake (13.2.1)
-    rexml (3.3.9)
+    rexml (3.4.2)
     ruby2_keywords (0.0.5)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
