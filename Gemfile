@@ -13,6 +13,8 @@ gem 'json'
 
 gem "minitest"
 gem "rake"
+gem "simplecov", require: false
+gem "webmock", require: false
 
 gem "influxdb-client"
 
