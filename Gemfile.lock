@@ -76,7 +76,7 @@ GEM
       ruby2_keywords (~> 0.0.1)
     public_suffix (6.0.2)
     raabro (1.4.0)
-    rack (2.2.10)
+    rack (2.2.20)
     rack-protection (2.2.4)
       rack
     rake (13.2.1)
