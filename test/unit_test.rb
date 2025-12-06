@@ -107,6 +107,7 @@ class UnitTest < Minitest::Test
     assert_equal(3, weather.weather_code)
     assert_equal(12.3, weather.wind_speed)
     assert_equal('Teilweise bewölkt', weather.weather_description)
+    assert_equal('⛅', weather.weather_icon)
   end
 
   def test_weather_client_error_handling
@@ -118,6 +119,7 @@ class UnitTest < Minitest::Test
     assert_equal(0, weather.weather_code)
     assert_equal(0.0, weather.wind_speed)
     assert_equal('Keine Daten', weather.weather_description)
+    assert_equal('❓', weather.weather_icon)
   end
 
   def test_weather_code_descriptions
@@ -134,6 +136,7 @@ class UnitTest < Minitest::Test
 
     weather = WeatherClient.new
     assert_equal('Schnee', weather.weather_description)
+    assert_equal('❄️', weather.weather_icon)
   end
 
 end
