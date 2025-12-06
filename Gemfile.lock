@@ -131,8 +131,6 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    xml-simple (1.1.9)
-      rexml
 
 PLATFORMS
   aarch64-linux-gnu
@@ -157,7 +155,6 @@ DEPENDENCIES
   simplecov
   smashing
   webmock
-  xml-simple
 
 BUNDLED WITH
    2.5.23

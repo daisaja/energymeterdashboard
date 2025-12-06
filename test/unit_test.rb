@@ -1,4 +1,8 @@
-# Set environment variables BEFORE requiring the files that use them
+require 'minitest/autorun'
+require 'webmock/minitest'
+
+# rubocop:disable Style/MixedRequireStatements
+# Environment variables must be set before requiring files that use them
 ENV['GRID_METER_HOST'] = '192.168.178.103'
 ENV['OPENDTU_HOST'] = '192.168.1.100'
 ENV['HEATING_METER_HOST'] = '192.168.178.50'
@@ -11,13 +15,10 @@ SimpleCov.start do
   add_filter '/test/'
 end
 
-require 'minitest/autorun'
-require 'webmock/minitest'
 require_relative '../jobs/meter_helper/grid_meter_client'
 require_relative '../jobs/meter_helper/opendtu_meter_client'
-require_relative '../jobs/meter_helper/heating_meter_client'
-require_relative '../jobs/meter_helper/solar_meter_client'
-require_relative '../jobs/influx_exporter'
+require_relative '../jobs/weather'
+# rubocop:enable Style/MixedRequireStatements
 
 class UnitTest < Minitest::Test
 
@@ -99,143 +100,54 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, opendtu_measures.yield_total)
   end
 
-  # HeatingMeasurements Tests
-  def test_heating_meter_client
-    current_month = Date.today.month
-
-    # Mock Youless API responses
-    stub_request(:get, "http://192.168.178.50/a?f=j")
-      .to_return(status: 200, body: { 'pwr' => 1500 }.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    stub_request(:get, "http://192.168.178.50/V?m=#{current_month}&?f=j")
-      .to_return(status: 200, body: { 'val' => ['10.5', '20.3', '15.2'] }.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
-      .to_return(status: 200, body: { 'val' => [500, 600, 400] }.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
-      .to_return(status: 200, body: { 'val' => [800, 700, 500] }.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    heating_measures = HeatingMeasurements.new()
-    assert_equal(1500, heating_measures.heating_watts_current)
-    assert_in_delta(46.0, heating_measures.heating_per_month, 0.1)  # 10.5 + 20.3 + 15.2 = 46.0
-    assert_equal(1, heating_measures.heating_kwh_current_day)  # (500+600+400)/1000 = 1
-    assert_equal(2, heating_measures.heating_kwh_last_day)  # (800+700+500)/1000 = 2
-  end
-
-  def test_heating_meter_client_error_handling
-    current_month = Date.today.month
-
-    # Mock Youless being unavailable
-    stub_request(:get, "http://192.168.178.50/a?f=j")
-      .to_raise(Errno::ECONNREFUSED)
-
-    stub_request(:get, "http://192.168.178.50/V?m=#{current_month}&?f=j")
-      .to_raise(Errno::ECONNREFUSED)
-
-    stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
-      .to_raise(Errno::ECONNREFUSED)
-
-    stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
-      .to_raise(Errno::ECONNREFUSED)
-
-    assert_raises(Errno::ECONNREFUSED) do
-      HeatingMeasurements.new()
-    end
-  end
-
-  # SolarMeasurements Tests
-  def test_solar_meter_client
-    sma_response = {
-      'result' => {
-        '017A-B339126F' => {
-          '6100_40263F00' => {
-            '1' => [{ 'val' => 3500 }]
-          }
-        }
+  # WeatherClient Tests
+  def test_weather_client
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 18.5,
+        'weather_code' => 3,
+        'wind_speed_10m' => 12.3
       }
     }
 
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: sma_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
-    solar_measures = SolarMeasurements.new()
-    assert_equal(3500, solar_measures.solar_watts_current)
-    assert_equal(0.0, solar_measures.solar_watts_per_month)  # not implemented
+    weather = WeatherClient.new
+    assert_equal(18.5, weather.temperature)
+    assert_equal(3, weather.weather_code)
+    assert_equal(12.3, weather.wind_speed)
+    assert_equal('Teilweise bewölkt', weather.weather_description)
+    assert_equal('⛅', weather.weather_icon)
   end
 
-  def test_solar_meter_client_fallback_device_id
-    sma_response = {
-      'result' => {
-        '017A-xxxxx26F' => {
-          '6100_40263F00' => {
-            '1' => [{ 'val' => 2800 }]
-          }
-        }
-      }
-    }
-
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: sma_response.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    solar_measures = SolarMeasurements.new()
-    assert_equal(2800, solar_measures.solar_watts_current)
-  end
-
-  def test_solar_meter_client_error_handling
-    # SolarMeasurements hat keine Fehlerbehandlung für HTTP-Fehler
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+  def test_weather_client_error_handling
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
       .to_raise(Errno::ECONNREFUSED)
 
-    assert_raises(Errno::ECONNREFUSED) do
-      SolarMeasurements.new()
-    end
+    weather = WeatherClient.new
+    assert_equal(0.0, weather.temperature)
+    assert_equal(0, weather.weather_code)
+    assert_equal(0.0, weather.wind_speed)
+    assert_equal('Keine Daten', weather.weather_description)
+    assert_equal('?', weather.weather_icon)
   end
 
-  def test_solar_meter_client_nil_value
-    sma_response = {
-      'result' => {
-        '017A-B339126F' => {
-          '6100_40263F00' => {
-            '1' => [{ 'val' => nil }]
-          }
-        }
+  def test_weather_code_descriptions
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 5.0,
+        'weather_code' => 71,
+        'wind_speed_10m' => 8.0
       }
     }
 
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: sma_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
-    solar_measures = SolarMeasurements.new()
-    assert_equal(0.0, solar_measures.solar_watts_current)
-  end
-
-  # InfluxExporter Tests
-  def test_influx_exporter_initialization
-    exporter = InfluxExporter.new()
-    assert_instance_of(InfluxDB2::Client, exporter.influx_client)
-  end
-
-  # is_new_day() Helper Tests
-  def test_is_new_day_at_midnight
-    # Stub Time.now to return a time just after midnight
-    Time.stub :now, Time.new(2024, 1, 15, 0, 5, 0) do
-      assert_equal(true, is_new_day())
-    end
-  end
-
-  def test_is_new_day_during_day
-    # Stub Time.now to return midday
-    Time.stub :now, Time.new(2024, 1, 15, 12, 0, 0) do
-      assert_equal(false, is_new_day())
-    end
-  end
-
-  def test_is_new_day_after_window
-    # Stub Time.now to return 11 minutes after midnight (outside 600s window)
-    Time.stub :now, Time.new(2024, 1, 15, 0, 11, 0) do
-      assert_equal(false, is_new_day())
-    end
+    weather = WeatherClient.new
+    assert_equal('Schnee', weather.weather_description)
+    assert_equal('❄', weather.weather_icon)
   end
 
 end
