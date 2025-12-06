@@ -26,7 +26,7 @@ This is a **Ruby/Smashing-based Energy Dashboard** project that monitors energy 
 - Support both local development (.env files) and Docker runtime (--env-file)
 
 ### 4. **External Integrations**
-- **Yahoo Weather API**: Requires API registration
+- **Open-Meteo API**: Free weather API (no API key required) for temperature and weather data
 - **SMA Inverter**: Firmware 2.13.33.R / 3.10.10.R (document version requirements)
 - **InfluxDB**: Use influxdb-client gem for all database operations
 - **Tibber GraphQL**: Use graphql-client gem for energy pricing data
