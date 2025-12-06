@@ -6,8 +6,7 @@ end
 require 'minitest/autorun'
 require 'webmock/minitest'
 
-# rubocop:disable Style/MixedRequireStatements
-# Environment variables must be set before requiring files that use them
+# Set test environment variables before loading application code
 ENV['GRID_METER_HOST'] = '192.168.178.103'
 ENV['OPENDTU_HOST'] = '192.168.1.100'
 ENV['HEATING_METER_HOST'] = '192.168.178.50'
@@ -21,9 +20,13 @@ require_relative '../jobs/meter_helper/heating_meter_client'
 require_relative '../jobs/meter_helper/solar_meter_client'
 require_relative '../jobs/weather'
 require_relative '../jobs/influx_exporter'
-# rubocop:enable Style/MixedRequireStatements
 
 class UnitTest < Minitest::Test
+  # Test constants to avoid duplication
+  CONTENT_TYPE_JSON = 'Content-Type'
+  APPLICATION_JSON = 'application/json'
+  OPEN_METEO_API_REGEX = /api\.open-meteo\.com\/v1\/forecast/
+  SOLAR_METER_URL = 'https://192.168.178.60/dyn/getDashValues.json'
 
   def setup
     # Disable real HTTP requests and enable webmock
@@ -62,7 +65,7 @@ class UnitTest < Minitest::Test
     }
 
     stub_request(:get, "http://192.168.178.103:8081/")
-      .to_return(status: 200, body: grid_meter_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     grid_measures = GridMeasurements.new()
     assert_equal(2500, grid_measures.grid_feed_current)
@@ -84,7 +87,7 @@ class UnitTest < Minitest::Test
     }
 
     stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
-      .to_return(status: 200, body: opendtu_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: opendtu_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     opendtu_measures = OpenDTUMeterClient.new()
     assert_equal(2451.0, opendtu_measures.power_watts)
@@ -113,8 +116,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal(18.5, weather.temperature)
@@ -125,7 +128,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_weather_client_error_handling
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+    stub_request(:get, OPEN_METEO_API_REGEX)
       .to_raise(Errno::ECONNREFUSED)
 
     weather = WeatherClient.new
@@ -145,8 +148,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Schnee', weather.weather_description)
@@ -162,8 +165,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Klar', weather.weather_description)
@@ -179,8 +182,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Regen', weather.weather_description)
@@ -196,8 +199,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Gewitter', weather.weather_description)
@@ -213,8 +216,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Unbekannt', weather.weather_description)
@@ -230,8 +233,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
-      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal(18.6, weather.temperature)
@@ -253,16 +256,16 @@ class UnitTest < Minitest::Test
     }
 
     stub_request(:get, "http://192.168.178.50/a?f=j")
-      .to_return(status: 200, body: heating_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: heating_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     
     stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
-      .to_return(status: 200, body: month_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: month_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     
     stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
-      .to_return(status: 200, body: day_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: day_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     
     stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
-      .to_return(status: 200, body: day_response.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: day_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     heating = HeatingMeasurements.new
     assert_equal(1500, heating.heating_watts_current)
@@ -272,8 +275,6 @@ class UnitTest < Minitest::Test
   end
 
   def test_heating_meter_client_error_handling
-    current_month = Date.today.month
-
     # Mock Youless being unavailable
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_raise(Errno::ECONNREFUSED)
@@ -304,8 +305,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:post, SOLAR_METER_URL)
+      .to_return(status: 200, body: solar_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     solar = SolarMeasurements.new
     assert_equal(3500, solar.solar_watts_current)
@@ -323,8 +324,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:post, SOLAR_METER_URL)
+      .to_return(status: 200, body: solar_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     solar = SolarMeasurements.new
     assert_equal(2500, solar.solar_watts_current)
@@ -341,8 +342,8 @@ class UnitTest < Minitest::Test
       }
     }
 
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
-      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:post, SOLAR_METER_URL)
+      .to_return(status: 200, body: solar_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     solar = SolarMeasurements.new
     assert_equal(0.0, solar.solar_watts_current)
@@ -350,7 +351,7 @@ class UnitTest < Minitest::Test
 
   def test_solar_meter_client_error_handling
     # SolarMeasurements hat keine Fehlerbehandlung für HTTP-Fehler
-    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+    stub_request(:post, SOLAR_METER_URL)
       .to_raise(Errno::ECONNREFUSED)
 
     assert_raises(Errno::ECONNREFUSED) do
