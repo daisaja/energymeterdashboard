@@ -153,6 +153,91 @@ class UnitTest < Minitest::Test
     assert_equal('❄', weather.weather_icon)
   end
 
+  def test_weather_code_clear_sky
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 25.0,
+        'weather_code' => 0,
+        'wind_speed_10m' => 5.0
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal('Klar', weather.weather_description)
+    assert_equal('☀', weather.weather_icon)
+  end
+
+  def test_weather_code_rain
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 12.0,
+        'weather_code' => 61,
+        'wind_speed_10m' => 15.0
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal('Regen', weather.weather_description)
+    assert_equal('☂', weather.weather_icon)
+  end
+
+  def test_weather_code_thunderstorm
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 18.0,
+        'weather_code' => 95,
+        'wind_speed_10m' => 25.0
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal('Gewitter', weather.weather_description)
+    assert_equal('⚡', weather.weather_icon)
+  end
+
+  def test_weather_code_unknown
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 10.0,
+        'weather_code' => 999,
+        'wind_speed_10m' => 10.0
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal('Unbekannt', weather.weather_description)
+    assert_equal('?', weather.weather_icon)
+  end
+
+  def test_weather_temperature_rounding
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 18.567,
+        'weather_code' => 1,
+        'wind_speed_10m' => 12.345
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal(18.6, weather.temperature)
+    assert_equal(12.3, weather.wind_speed)
+  end
+
   # HeatingMeasurements Tests
   def test_heating_meter_client
     heating_response = {
