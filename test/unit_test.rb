@@ -5,6 +5,15 @@ require 'webmock/minitest'
 # Environment variables must be set before requiring files that use them
 ENV['GRID_METER_HOST'] = '192.168.178.103'
 ENV['OPENDTU_HOST'] = '192.168.1.100'
+ENV['HEATING_METER_HOST'] = '192.168.178.50'
+ENV['SOLAR_METER_HOST'] = '192.168.178.60'
+ENV['INFLUXDB_HOST'] = '192.168.178.70'
+ENV['INFLUXDB_TOKEN'] = 'test-token'
+
+require 'simplecov'
+SimpleCov.start do
+  add_filter '/test/'
+end
 
 require_relative '../jobs/meter_helper/grid_meter_client'
 require_relative '../jobs/meter_helper/opendtu_meter_client'
