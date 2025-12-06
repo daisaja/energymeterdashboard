@@ -32,24 +32,24 @@ class WeatherClient
     @weather_code = 0
     @wind_speed = 0.0
     @weather_description = 'Keine Daten'
-    @weather_icon = '❓'
+    @weather_icon = '?'
   end
 
   def weather_code_to_description(code)
     case code
-    when 0 then ['Klar', '☀️']
+    when 0 then ['Klar', '☀']
     when 1, 2, 3 then ['Teilweise bewölkt', '⛅']
-    when 45, 48 then ['Nebel', '🌫️']
-    when 51, 53, 55 then ['Nieselregen', '🌧️']
-    when 61, 63, 65 then ['Regen', '🌧️']
-    when 66, 67 then ['Gefrierender Regen', '🌨️']
-    when 71, 73, 75 then ['Schnee', '❄️']
-    when 77 then ['Schneekörner', '❄️']
-    when 80, 81, 82 then ['Regenschauer', '🌦️']
-    when 85, 86 then ['Schneeschauer', '🌨️']
-    when 95 then ['Gewitter', '⛈️']
-    when 96, 99 then ['Gewitter mit Hagel', '⛈️']
-    else ['Unbekannt', '❓']
+    when 45, 48 then ['Nebel', '☁']
+    when 51, 53, 55 then ['Nieselregen', '☂']
+    when 61, 63, 65 then ['Regen', '☂']
+    when 66, 67 then ['Gefrierender Regen', '☂']
+    when 71, 73, 75 then ['Schnee', '❄']
+    when 77 then ['Schneekörner', '❄']
+    when 80, 81, 82 then ['Regenschauer', '☔']
+    when 85, 86 then ['Schneeschauer', '❄']
+    when 95 then ['Gewitter', '⚡']
+    when 96, 99 then ['Gewitter mit Hagel', '⚡']
+    else ['Unbekannt', '?']
     end
   end
 end
