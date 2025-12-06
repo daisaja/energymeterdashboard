@@ -1,3 +1,8 @@
+require 'simplecov'
+SimpleCov.start do
+  add_filter '/test/'
+end
+
 require 'minitest/autorun'
 require 'webmock/minitest'
 
@@ -10,14 +15,12 @@ ENV['SOLAR_METER_HOST'] = '192.168.178.60'
 ENV['INFLUXDB_HOST'] = '192.168.178.70'
 ENV['INFLUXDB_TOKEN'] = 'test-token'
 
-require 'simplecov'
-SimpleCov.start do
-  add_filter '/test/'
-end
-
 require_relative '../jobs/meter_helper/grid_meter_client'
 require_relative '../jobs/meter_helper/opendtu_meter_client'
+require_relative '../jobs/meter_helper/heating_meter_client'
+require_relative '../jobs/meter_helper/solar_meter_client'
 require_relative '../jobs/weather'
+require_relative '../jobs/influx_exporter'
 # rubocop:enable Style/MixedRequireStatements
 
 class UnitTest < Minitest::Test
@@ -148,6 +151,154 @@ class UnitTest < Minitest::Test
     weather = WeatherClient.new
     assert_equal('Schnee', weather.weather_description)
     assert_equal('❄', weather.weather_icon)
+  end
+
+  # HeatingMeasurements Tests
+  def test_heating_meter_client
+    heating_response = {
+      'pwr' => 1500
+    }
+    
+    month_response = {
+      'val' => [10, 15, 20, 25]
+    }
+    
+    day_response = {
+      'val' => [100, 200, 300, 400]
+    }
+
+    stub_request(:get, "http://192.168.178.50/a?f=j")
+      .to_return(status: 200, body: heating_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+      .to_return(status: 200, body: month_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    
+    stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
+      .to_return(status: 200, body: day_response.to_json, headers: { 'Content-Type' => 'application/json' })
+    
+    stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
+      .to_return(status: 200, body: day_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    heating = HeatingMeasurements.new
+    assert_equal(1500, heating.heating_watts_current)
+    assert_equal(70.0, heating.heating_per_month)
+    assert_equal(1, heating.heating_kwh_current_day)
+    assert_equal(1, heating.heating_kwh_last_day)
+  end
+
+  def test_heating_meter_client_error_handling
+    current_month = Date.today.month
+
+    # Mock Youless being unavailable
+    stub_request(:get, "http://192.168.178.50/a?f=j")
+      .to_raise(Errno::ECONNREFUSED)
+
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+      .to_raise(Errno::ECONNREFUSED)
+
+    stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
+      .to_raise(Errno::ECONNREFUSED)
+
+    stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
+      .to_raise(Errno::ECONNREFUSED)
+
+    assert_raises(Errno::ECONNREFUSED) do
+      HeatingMeasurements.new()
+    end
+  end
+
+  # SolarMeasurements Tests
+  def test_solar_meter_client
+    solar_response = {
+      'result' => {
+        '017A-B339126F' => {
+          '6100_40263F00' => {
+            '1' => [{ 'val' => 3500 }]
+          }
+        }
+      }
+    }
+
+    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    solar = SolarMeasurements.new
+    assert_equal(3500, solar.solar_watts_current)
+    assert_equal(0.0, solar.solar_watts_per_month)
+  end
+
+  def test_solar_meter_client_fallback
+    solar_response = {
+      'result' => {
+        '017A-xxxxx26F' => {
+          '6100_40263F00' => {
+            '1' => [{ 'val' => 2500 }]
+          }
+        }
+      }
+    }
+
+    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    solar = SolarMeasurements.new
+    assert_equal(2500, solar.solar_watts_current)
+  end
+
+  def test_solar_meter_client_nil_value
+    solar_response = {
+      'result' => {
+        '017A-B339126F' => {
+          '6100_40263F00' => {
+            '1' => [{ 'val' => nil }]
+          }
+        }
+      }
+    }
+
+    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+      .to_return(status: 200, body: solar_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    solar = SolarMeasurements.new
+    assert_equal(0.0, solar.solar_watts_current)
+  end
+
+  def test_solar_meter_client_error_handling
+    # SolarMeasurements hat keine Fehlerbehandlung für HTTP-Fehler
+    stub_request(:post, "https://192.168.178.60/dyn/getDashValues.json")
+      .to_raise(Errno::ECONNREFUSED)
+
+    assert_raises(Errno::ECONNREFUSED) do
+      SolarMeasurements.new()
+    end
+  end
+
+  # InfluxExporter Tests
+  def test_influx_exporter_initialization
+    exporter = InfluxExporter.new
+    refute_nil(exporter.influx_client)
+  end
+
+  # is_new_day helper function tests
+  def test_is_new_day_at_midnight
+    # Stub Time.now to return a time just after midnight
+    Time.stub :now, Time.new(2024, 1, 15, 0, 5, 0) do
+      assert_equal(true, is_new_day())
+    end
+  end
+
+  def test_is_new_day_during_day
+    # Stub Time.now to return midday
+    Time.stub :now, Time.new(2024, 1, 15, 12, 0, 0) do
+      assert_equal(false, is_new_day())
+    end
+  end
+
+  def test_is_new_day_after_window
+    # Stub Time.now to return 11 minutes after midnight (outside 600s window)
+    Time.stub :now, Time.new(2024, 1, 15, 0, 11, 0) do
+      assert_equal(false, is_new_day())
+    end
   end
 
 end
