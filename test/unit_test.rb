@@ -1,13 +1,15 @@
 require 'minitest/autorun'
 require 'webmock/minitest'
 
-# Set environment variables BEFORE requiring the files that use them
+# rubocop:disable Style/MixedRequireStatements
+# Environment variables must be set before requiring files that use them
 ENV['GRID_METER_HOST'] = '192.168.178.103'
 ENV['OPENDTU_HOST'] = '192.168.1.100'
 
 require_relative '../jobs/meter_helper/grid_meter_client'
 require_relative '../jobs/meter_helper/opendtu_meter_client'
 require_relative '../jobs/weather'
+# rubocop:enable Style/MixedRequireStatements
 
 class UnitTest < Minitest::Test
 
