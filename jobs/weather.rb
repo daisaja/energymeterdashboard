@@ -7,7 +7,7 @@ class WeatherClient
 
   OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
-  attr_reader :temperature, :weather_code, :wind_speed, :weather_description
+  attr_reader :temperature, :weather_code, :wind_speed, :weather_description, :weather_icon
 
   def initialize
     fetch_weather_data
@@ -25,30 +25,31 @@ class WeatherClient
     @temperature = current['temperature_2m'].round(1)
     @weather_code = current['weather_code']
     @wind_speed = current['wind_speed_10m'].round(1)
-    @weather_description = weather_code_to_description(@weather_code)
+    @weather_description, @weather_icon = weather_code_to_description(@weather_code)
   rescue => e
     puts "Error fetching weather data: #{e.message}"
     @temperature = 0.0
     @weather_code = 0
     @wind_speed = 0.0
     @weather_description = 'Keine Daten'
+    @weather_icon = '❓'
   end
 
   def weather_code_to_description(code)
     case code
-    when 0 then 'Klar'
-    when 1, 2, 3 then 'Teilweise bewölkt'
-    when 45, 48 then 'Nebel'
-    when 51, 53, 55 then 'Nieselregen'
-    when 61, 63, 65 then 'Regen'
-    when 66, 67 then 'Gefrierender Regen'
-    when 71, 73, 75 then 'Schnee'
-    when 77 then 'Schneekörner'
-    when 80, 81, 82 then 'Regenschauer'
-    when 85, 86 then 'Schneeschauer'
-    when 95 then 'Gewitter'
-    when 96, 99 then 'Gewitter mit Hagel'
-    else 'Unbekannt'
+    when 0 then ['Klar', '☀️']
+    when 1, 2, 3 then ['Teilweise bewölkt', '⛅']
+    when 45, 48 then ['Nebel', '🌫️']
+    when 51, 53, 55 then ['Nieselregen', '🌧️']
+    when 61, 63, 65 then ['Regen', '🌧️']
+    when 66, 67 then ['Gefrierender Regen', '🌨️']
+    when 71, 73, 75 then ['Schnee', '❄️']
+    when 77 then ['Schneekörner', '❄️']
+    when 80, 81, 82 then ['Regenschauer', '🌦️']
+    when 85, 86 then ['Schneeschauer', '🌨️']
+    when 95 then ['Gewitter', '⛈️']
+    when 96, 99 then ['Gewitter mit Hagel', '⛈️']
+    else ['Unbekannt', '❓']
     end
   end
 end
@@ -59,6 +60,7 @@ if defined?(SCHEDULER)
 
     send_event('weather_temperature', {
       current: weather.temperature,
+      prefix: weather.weather_icon,
       moreinfo: "#{weather.weather_description}, Wind: #{weather.wind_speed} km/h"
     })
   end
