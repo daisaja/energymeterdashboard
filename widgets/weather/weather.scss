@@ -1,0 +1,35 @@
+$background-color: #4a90d9;
+
+.widget-weather {
+  background-color: $background-color;
+
+  .title {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .weather-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .weather-icon {
+    font-size: 50px;
+    line-height: 1;
+  }
+
+  .weather-temp {
+    font-size: 45px;
+    font-weight: bold;
+  }
+
+  .more-info {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+
+  .updated-at {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}

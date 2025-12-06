@@ -60,7 +60,7 @@ if defined?(SCHEDULER)
 
     send_event('weather_temperature', {
       current: weather.temperature,
-      prefix: weather.weather_icon,
+      icon: weather.weather_icon,
       moreinfo: "#{weather.weather_description}, Wind: #{weather.wind_speed} km/h"
     })
   end
