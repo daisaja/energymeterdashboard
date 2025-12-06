@@ -5,8 +5,9 @@ require 'webmock/minitest'
 ENV['GRID_METER_HOST'] = '192.168.178.103'
 ENV['OPENDTU_HOST'] = '192.168.1.100'
 
-require_relative '../jobs/meter_helper/grid_meter_client' #name of file with class
+require_relative '../jobs/meter_helper/grid_meter_client'
 require_relative '../jobs/meter_helper/opendtu_meter_client'
+require_relative '../jobs/weather'
 
 class UnitTest < Minitest::Test
 
@@ -86,6 +87,53 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, opendtu_measures.power_watts)
     assert_equal(0.0, opendtu_measures.yield_day)
     assert_equal(0.0, opendtu_measures.yield_total)
+  end
+
+  # WeatherClient Tests
+  def test_weather_client
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 18.5,
+        'weather_code' => 3,
+        'wind_speed_10m' => 12.3
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal(18.5, weather.temperature)
+    assert_equal(3, weather.weather_code)
+    assert_equal(12.3, weather.wind_speed)
+    assert_equal('Teilweise bewölkt', weather.weather_description)
+  end
+
+  def test_weather_client_error_handling
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_raise(Errno::ECONNREFUSED)
+
+    weather = WeatherClient.new
+    assert_equal(0.0, weather.temperature)
+    assert_equal(0, weather.weather_code)
+    assert_equal(0.0, weather.wind_speed)
+    assert_equal('Keine Daten', weather.weather_description)
+  end
+
+  def test_weather_code_descriptions
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 5.0,
+        'weather_code' => 71,
+        'wind_speed_10m' => 8.0
+      }
+    }
+
+    stub_request(:get, /api\.open-meteo\.com\/v1\/forecast/)
+      .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    weather = WeatherClient.new
+    assert_equal('Schnee', weather.weather_description)
   end
 
 end
