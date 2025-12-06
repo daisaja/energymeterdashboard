@@ -1,4 +1,10 @@
+# Energy Meter Dashboard
+
 [![Docker Image CI](https://github.com/daisaja/energymeterdashboard/actions/workflows/docker.yml/badge.svg)](https://github.com/daisaja/energymeterdashboard/actions/workflows/docker.yml)
+[![CodeQL](https://github.com/daisaja/energymeterdashboard/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/daisaja/energymeterdashboard/actions/workflows/codeql-analysis.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=daisaja_energymeterdashboard&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=daisaja_energymeterdashboard)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=daisaja_energymeterdashboard&metric=coverage)](https://sonarcloud.io/summary/new_code?id=daisaja_energymeterdashboard)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=daisaja_energymeterdashboard&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=daisaja_energymeterdashboard)
 
 Check out http://smashing.github.io/smashing for more information.
 
