@@ -1,3 +1,5 @@
+ENV['TZ'] = 'Europe/Berlin'
+
 require 'dashing'
 
 configure do
