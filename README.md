@@ -2,35 +2,20 @@
 
 Check out http://smashing.github.io/smashing for more information.
 
-Please note: in order to run klimato weather widget you need to register for yahoo weather api here: https://developer.yahoo.com/weather/
-
-Afterwards you need to expose your appid, customerKey and customerSecrets as environment variables like this:
-
-$ export EM_APP_ID=my_app_id_value  
-$ export EM_CONSUMER_KEY=my_customer_key_value  
-$ export EM_CONSUMER_SECRET=my_customer_secret_value  
-
-In order to run the docker container you need to put variables into a env-file like this:
-
-$ touch .env
-
-EM_APP_ID=my_app_id_value  
-EM_CONSUMER_KEY=my_customer_key_value  
-EM_CONSUMER_SECRET=my_customer_secret_value  
-
+## Docker
 
 Run docker with:
 
-$ docker run -p3030:3030 --env-file .env id_of_your_container
+```bash
+docker run -p3030:3030 --env-file .env daisaja/energymeter:latest
+```
 
-See for further explanations: https://vsupalov.com/docker-build-time-env-values/
+Build and push:
 
-For local build and test also possible:
-
-docker build --build-arg EM_APP_ID=my_app_id_value EM_CONSUMER_KEY=my_customer_key_value EM_CONSUMER_SECRET=my_customer_secret_value
-
+```bash
 docker build -t daisaja/energymeter:latest .
 docker push daisaja/energymeter:latest
+```
 
 SMA firmware: 2.13.33.R / 3.10.10.R
 
