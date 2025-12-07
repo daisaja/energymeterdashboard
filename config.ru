@@ -2,6 +2,13 @@ ENV['TZ'] = 'Europe/Berlin'
 
 require 'dashing'
 
+# Suppress rufus-scheduler stack traces - errors are already logged by meter clients
+Rufus::Scheduler.class_eval do
+  def on_error(job, error)
+    # Only log simple message, not full stack trace
+  end
+end
+
 configure do
   set :auth_token, 'YOUR_AUTH_TOKEN'
   set :default_dashboard, 'p2' #<==== set default dashboard like this
