@@ -18,16 +18,16 @@ class SolarMeasurements
     solar_watts_per_month: #{solar_watts_per_month}"
   end
 
-  def fetch_data_from_solar_meter()
+  def fetch_data_from_solar_meter
     response = HTTParty.post(SMA_VALUES_URL, verify: false) #without ssl check
 
-    begin  # "try" block
+    begin
       @solar_watts_current = response.parsed_response['result']['017A-B339126F']['6100_40263F00']['1'][0]['val']
-    rescue # optionally: `rescue Exception => ex`
+    rescue
       begin
         @solar_watts_current = response.parsed_response['result']['017A-xxxxx26F']['6100_40263F00']['1'][0]['val']
       rescue
-        puts 'Alternative did not work. Set solar watts to -1.'
+        puts '[SolarMeter] Konnte Wert nicht aus Antwort lesen'
         @solar_watts_current = -1
       end
     end
@@ -36,5 +36,13 @@ class SolarMeasurements
       @solar_watts_current = 0.0
     end
     @solar_watts_per_month = 0.0 # not implemented yet
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[SolarMeter] Verbindung zu #{SOLAR_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
+    set_default_values
+  end
+
+  def set_default_values
+    @solar_watts_current = 0.0
+    @solar_watts_per_month = 0.0
   end
 end

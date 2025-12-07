@@ -76,6 +76,28 @@ class UnitTest < Minitest::Test
     assert_equal(1200, grid_measures.grid_supply_current)
   end
 
+  def test_grid_meter_client_connection_refused
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_raise(Errno::ECONNREFUSED)
+
+    grid_measures = GridMeasurements.new
+    assert_equal(0.0, grid_measures.grid_feed_current)
+    assert_equal(0.0, grid_measures.grid_feed_total)
+    assert_equal(0.0, grid_measures.grid_supply_current)
+    assert_equal(0.0, grid_measures.grid_supply_total)
+  end
+
+  def test_grid_meter_client_host_unreachable
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_raise(Errno::EHOSTUNREACH)
+
+    grid_measures = GridMeasurements.new
+    assert_equal(0.0, grid_measures.grid_feed_current)
+    assert_equal(0.0, grid_measures.grid_feed_total)
+    assert_equal(0.0, grid_measures.grid_supply_current)
+    assert_equal(0.0, grid_measures.grid_supply_total)
+  end
+
   def test_opendtu_meter_client
     # Mock the OpenDTU API response
     opendtu_response = {
@@ -275,7 +297,6 @@ class UnitTest < Minitest::Test
   end
 
   def test_heating_meter_client_error_handling
-    # Mock Youless being unavailable
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_raise(Errno::ECONNREFUSED)
 
@@ -288,9 +309,22 @@ class UnitTest < Minitest::Test
     stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
       .to_raise(Errno::ECONNREFUSED)
 
-    assert_raises(Errno::ECONNREFUSED) do
-      HeatingMeasurements.new()
-    end
+    heating = HeatingMeasurements.new
+    assert_equal(0.0, heating.heating_watts_current)
+    assert_equal(0.0, heating.heating_per_month)
+    assert_equal(0.0, heating.heating_kwh_current_day)
+    assert_equal(0.0, heating.heating_kwh_last_day)
+  end
+
+  def test_heating_meter_client_host_unreachable
+    stub_request(:get, "http://192.168.178.50/a?f=j")
+      .to_raise(Errno::EHOSTUNREACH)
+
+    heating = HeatingMeasurements.new
+    assert_equal(0.0, heating.heating_watts_current)
+    assert_equal(0.0, heating.heating_per_month)
+    assert_equal(0.0, heating.heating_kwh_current_day)
+    assert_equal(0.0, heating.heating_kwh_last_day)
   end
 
   # SolarMeasurements Tests
@@ -350,13 +384,21 @@ class UnitTest < Minitest::Test
   end
 
   def test_solar_meter_client_error_handling
-    # SolarMeasurements hat keine Fehlerbehandlung für HTTP-Fehler
     stub_request(:post, SOLAR_METER_URL)
       .to_raise(Errno::ECONNREFUSED)
 
-    assert_raises(Errno::ECONNREFUSED) do
-      SolarMeasurements.new()
-    end
+    solar = SolarMeasurements.new
+    assert_equal(0.0, solar.solar_watts_current)
+    assert_equal(0.0, solar.solar_watts_per_month)
+  end
+
+  def test_solar_meter_client_host_unreachable
+    stub_request(:post, SOLAR_METER_URL)
+      .to_raise(Errno::EHOSTUNREACH)
+
+    solar = SolarMeasurements.new
+    assert_equal(0.0, solar.solar_watts_current)
+    assert_equal(0.0, solar.solar_watts_per_month)
   end
 
   # InfluxExporter Tests

@@ -11,18 +11,23 @@ class OpenDTUMeterClient
   end
 
   def fetch_data_from_opendtu
-    begin
-      response = HTTParty.get(@opendtu_url)
+    response = HTTParty.get(@opendtu_url)
 
-      @power_watts = response.parsed_response['total']['Power']['v'].to_f.round(0)
-      @yield_day = response.parsed_response['total']['YieldDay']['v'].to_f.round(0)
-      @yield_total = response.parsed_response['total']['YieldTotal']['v'].to_f.round(0)
-    rescue => e
-      puts "Error while retrieving OpenDTU data: #{e.message}"
-      @power_watts = 0.0
-      @yield_day = 0.0
-      @yield_total = 0.0
-    end
+    @power_watts = response.parsed_response['total']['Power']['v'].to_f.round(0)
+    @yield_day = response.parsed_response['total']['YieldDay']['v'].to_f.round(0)
+    @yield_total = response.parsed_response['total']['YieldTotal']['v'].to_f.round(0)
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[OpenDTU] Verbindung zu #{@opendtu_host} fehlgeschlagen: Gerät nicht erreichbar"
+    set_default_values
+  rescue => e
+    puts "[OpenDTU] Fehler: #{e.message}"
+    set_default_values
+  end
+
+  def set_default_values
+    @power_watts = 0.0
+    @yield_day = 0.0
+    @yield_total = 0.0
   end 
 
   def to_s()

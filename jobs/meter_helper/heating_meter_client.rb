@@ -22,7 +22,7 @@ class HeatingMeasurements
     heating_kwh_last_day: #{heating_kwh_last_day}"
   end
 
-  def fetch_data_from_heating_meter()
+  def fetch_data_from_heating_meter
     response = HTTParty.get(YOULESS_VALUES_URL)
     @heating_watts_current = response.parsed_response['pwr']
 
@@ -37,6 +37,16 @@ class HeatingMeasurements
 
     response = HTTParty.get(YOULESS_LAST_DAY_KWH)
     @heating_kwh_last_day = calculate_sum_of_watts(response)
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
+    set_default_values
+  end
+
+  def set_default_values
+    @heating_watts_current = 0.0
+    @heating_per_month = 0.0
+    @heating_kwh_current_day = 0.0
+    @heating_kwh_last_day = 0.0
   end
 
   def calculate_sum_of_watts(response_with_data)
