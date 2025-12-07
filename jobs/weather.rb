@@ -1,6 +1,8 @@
 require 'httparty'
 
 class WeatherClient
+  @@last_values = {}
+
   # Rathenow, Brandenburg
   LATITUDE = 52.6048
   LONGITUDE = 12.3370
@@ -26,20 +28,31 @@ class WeatherClient
     @weather_code = current['weather_code']
     @wind_speed = current['wind_speed_10m'].round(1)
     @weather_description, @weather_icon = weather_code_to_description(@weather_code)
+    save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[Weather] Verbindung zu Open-Meteo API fehlgeschlagen: Server nicht erreichbar"
-    set_default_values
+    restore_last_values
   rescue => e
     puts "[Weather] Fehler: #{e.message}"
-    set_default_values
+    restore_last_values
   end
 
-  def set_default_values
-    @temperature = 0.0
-    @weather_code = 0
-    @wind_speed = 0.0
-    @weather_description = 'Keine Daten'
-    @weather_icon = '?'
+  def save_values
+    @@last_values = {
+      temperature: @temperature,
+      weather_code: @weather_code,
+      wind_speed: @wind_speed,
+      weather_description: @weather_description,
+      weather_icon: @weather_icon
+    }
+  end
+
+  def restore_last_values
+    @temperature = @@last_values[:temperature] || 0.0
+    @weather_code = @@last_values[:weather_code] || 0
+    @wind_speed = @@last_values[:wind_speed] || 0.0
+    @weather_description = @@last_values[:weather_description] || 'Keine Daten'
+    @weather_icon = @@last_values[:weather_icon] || '?'
   end
 
   def weather_code_to_description(code)

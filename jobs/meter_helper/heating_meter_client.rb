@@ -8,6 +8,8 @@ YOULESS_CURRENT_DAY_KWH = "http://#{HEATING_METER_HOST}/V?d=0&f=j"
 YOULESS_LAST_DAY_KWH = "http://#{HEATING_METER_HOST}/V?d=1&f=j"
 
 class HeatingMeasurements
+  @@last_values = {}
+
   attr_reader :heating_watts_current, :heating_per_month, :heating_kwh_current_day, :heating_kwh_last_day
 
   def initialize
@@ -37,16 +39,26 @@ class HeatingMeasurements
 
     response = HTTParty.get(YOULESS_LAST_DAY_KWH)
     @heating_kwh_last_day = calculate_sum_of_watts(response)
+    save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
-    set_default_values
+    restore_last_values
   end
 
-  def set_default_values
-    @heating_watts_current = 0.0
-    @heating_per_month = 0.0
-    @heating_kwh_current_day = 0.0
-    @heating_kwh_last_day = 0.0
+  def save_values
+    @@last_values = {
+      heating_watts_current: @heating_watts_current,
+      heating_per_month: @heating_per_month,
+      heating_kwh_current_day: @heating_kwh_current_day,
+      heating_kwh_last_day: @heating_kwh_last_day
+    }
+  end
+
+  def restore_last_values
+    @heating_watts_current = @@last_values[:heating_watts_current] || 0.0
+    @heating_per_month = @@last_values[:heating_per_month] || 0.0
+    @heating_kwh_current_day = @@last_values[:heating_kwh_current_day] || 0.0
+    @heating_kwh_last_day = @@last_values[:heating_kwh_last_day] || 0.0
   end
 
   def calculate_sum_of_watts(response_with_data)

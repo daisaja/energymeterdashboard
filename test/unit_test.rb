@@ -76,7 +76,8 @@ class UnitTest < Minitest::Test
     assert_equal(1200, grid_measures.grid_supply_current)
   end
 
-  def test_grid_meter_client_connection_refused
+  def test_grid_meter_client_connection_refused_first_time
+    GridMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:get, "http://192.168.178.103:8081/")
       .to_raise(Errno::ECONNREFUSED)
 
@@ -87,7 +88,8 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, grid_measures.grid_supply_total)
   end
 
-  def test_grid_meter_client_host_unreachable
+  def test_grid_meter_client_host_unreachable_first_time
+    GridMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:get, "http://192.168.178.103:8081/")
       .to_raise(Errno::EHOSTUNREACH)
 
@@ -96,6 +98,35 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, grid_measures.grid_feed_total)
     assert_equal(0.0, grid_measures.grid_supply_current)
     assert_equal(0.0, grid_measures.grid_supply_total)
+  end
+
+  def test_grid_meter_client_keeps_last_values_on_error
+    # First successful request
+    grid_meter_response = {
+      'data' => [
+        { 'uuid' => 'aface870-4a00-11ea-aa3c-8f09c95f5b9c', 'tuples' => [[1234567890000, 2500]] },
+        { 'uuid' => 'e564e6e0-4a00-11ea-af71-a55e127a0bfc', 'tuples' => [[1234567890000, 12345]] },
+        { 'uuid' => '0185bb38-769c-401f-9372-b89d615c9920', 'tuples' => [[1234567890000, 542]] },
+        { 'uuid' => '007aeef0-4a01-11ea-8773-6bda87ed0b9a', 'tuples' => [[1234567890000, 8765]] },
+        { 'uuid' => '472573b2-a888-4851-ada9-ffd8cd386001', 'tuples' => [[1234567890000, 234]] },
+        { 'uuid' => 'c6ada300-4a00-11ea-99d0-7577b1612d91', 'tuples' => [[1234567890000, 1200]] }
+      ]
+    }
+
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    grid_measures = GridMeasurements.new
+    assert_equal(2500, grid_measures.grid_feed_current)
+
+    # Second request fails - should keep old values
+    WebMock.reset!
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_raise(Errno::ECONNREFUSED)
+
+    grid_measures2 = GridMeasurements.new
+    assert_equal(2500, grid_measures2.grid_feed_current)
+    assert_equal(12345, grid_measures2.grid_feed_total)
   end
 
   def test_opendtu_meter_client
@@ -118,6 +149,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_opendtu_meter_client_error_handling
+    OpenDTUMeterClient.class_variable_set(:@@last_values, {})
     # Mock OpenDTU being unavailable
     stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
       .to_raise(Errno::ECONNREFUSED)
@@ -126,6 +158,32 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, opendtu_measures.power_watts)
     assert_equal(0.0, opendtu_measures.yield_day)
     assert_equal(0.0, opendtu_measures.yield_total)
+  end
+
+  def test_opendtu_meter_client_keeps_last_values_on_error
+    opendtu_response = {
+      'total' => {
+        'Power' => { 'v' => 2450.5 },
+        'YieldDay' => { 'v' => 12.5 },
+        'YieldTotal' => { 'v' => 1463.25 }
+      }
+    }
+
+    stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
+      .to_return(status: 200, body: opendtu_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    opendtu = OpenDTUMeterClient.new
+    assert_equal(2451.0, opendtu.power_watts)
+
+    # Second request fails - should keep old values
+    WebMock.reset!
+    stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
+      .to_raise(Errno::ECONNREFUSED)
+
+    opendtu2 = OpenDTUMeterClient.new
+    assert_equal(2451.0, opendtu2.power_watts)
+    assert_equal(13.0, opendtu2.yield_day)
+    assert_equal(1463.0, opendtu2.yield_total)
   end
 
   # WeatherClient Tests
@@ -150,6 +208,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_weather_client_error_handling
+    WeatherClient.class_variable_set(:@@last_values, {})
     stub_request(:get, OPEN_METEO_API_REGEX)
       .to_raise(Errno::ECONNREFUSED)
 
@@ -159,6 +218,34 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, weather.wind_speed)
     assert_equal('Keine Daten', weather.weather_description)
     assert_equal('?', weather.weather_icon)
+  end
+
+  def test_weather_client_keeps_last_values_on_error
+    weather_response = {
+      'current' => {
+        'temperature_2m' => 18.5,
+        'weather_code' => 3,
+        'wind_speed_10m' => 12.3
+      }
+    }
+
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    weather = WeatherClient.new
+    assert_equal(18.5, weather.temperature)
+
+    # Second request fails - should keep old values
+    WebMock.reset!
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_raise(Errno::ECONNREFUSED)
+
+    weather2 = WeatherClient.new
+    assert_equal(18.5, weather2.temperature)
+    assert_equal(3, weather2.weather_code)
+    assert_equal(12.3, weather2.wind_speed)
+    assert_equal('Teilweise bewölkt', weather2.weather_description)
+    assert_equal('⛅', weather2.weather_icon)
   end
 
   def test_weather_code_descriptions
@@ -297,6 +384,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_heating_meter_client_error_handling
+    HeatingMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_raise(Errno::ECONNREFUSED)
 
@@ -317,6 +405,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_heating_meter_client_host_unreachable
+    HeatingMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_raise(Errno::EHOSTUNREACH)
 
@@ -325,6 +414,35 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, heating.heating_per_month)
     assert_equal(0.0, heating.heating_kwh_current_day)
     assert_equal(0.0, heating.heating_kwh_last_day)
+  end
+
+  def test_heating_meter_client_keeps_last_values_on_error
+    heating_response = { 'pwr' => 1500 }
+    month_response = { 'val' => [10, 15, 20, 25] }
+    day_response = { 'val' => [100, 200, 300, 400] }
+
+    stub_request(:get, "http://192.168.178.50/a?f=j")
+      .to_return(status: 200, body: heating_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+      .to_return(status: 200, body: month_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+    stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
+      .to_return(status: 200, body: day_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+    stub_request(:get, "http://192.168.178.50/V?d=1&f=j")
+      .to_return(status: 200, body: day_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    heating = HeatingMeasurements.new
+    assert_equal(1500, heating.heating_watts_current)
+
+    # Second request fails - should keep old values
+    WebMock.reset!
+    stub_request(:get, "http://192.168.178.50/a?f=j")
+      .to_raise(Errno::ECONNREFUSED)
+
+    heating2 = HeatingMeasurements.new
+    assert_equal(1500, heating2.heating_watts_current)
+    assert_equal(70.0, heating2.heating_per_month)
+    assert_equal(1, heating2.heating_kwh_current_day)
+    assert_equal(1, heating2.heating_kwh_last_day)
   end
 
   # SolarMeasurements Tests
@@ -384,6 +502,7 @@ class UnitTest < Minitest::Test
   end
 
   def test_solar_meter_client_error_handling
+    SolarMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:post, SOLAR_METER_URL)
       .to_raise(Errno::ECONNREFUSED)
 
@@ -393,12 +512,40 @@ class UnitTest < Minitest::Test
   end
 
   def test_solar_meter_client_host_unreachable
+    SolarMeasurements.class_variable_set(:@@last_values, {})
     stub_request(:post, SOLAR_METER_URL)
       .to_raise(Errno::EHOSTUNREACH)
 
     solar = SolarMeasurements.new
     assert_equal(0.0, solar.solar_watts_current)
     assert_equal(0.0, solar.solar_watts_per_month)
+  end
+
+  def test_solar_meter_client_keeps_last_values_on_error
+    solar_response = {
+      'result' => {
+        '017A-B339126F' => {
+          '6100_40263F00' => {
+            '1' => [{ 'val' => 3500 }]
+          }
+        }
+      }
+    }
+
+    stub_request(:post, SOLAR_METER_URL)
+      .to_return(status: 200, body: solar_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    solar = SolarMeasurements.new
+    assert_equal(3500, solar.solar_watts_current)
+
+    # Second request fails - should keep old values
+    WebMock.reset!
+    stub_request(:post, SOLAR_METER_URL)
+      .to_raise(Errno::ECONNREFUSED)
+
+    solar2 = SolarMeasurements.new
+    assert_equal(3500, solar2.solar_watts_current)
+    assert_equal(0.0, solar2.solar_watts_per_month)
   end
 
   # InfluxExporter Tests
