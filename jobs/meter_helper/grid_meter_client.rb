@@ -31,16 +31,29 @@ class GridMeasurements
     energy_consumption_per_month: #{energy_consumption_per_month}"
   end
 
-  def fetch_data_from_grid_meter()
+  def fetch_data_from_grid_meter
     response = HTTParty.get(VZ_LOGGER_URL)
     data = response.parsed_response['data']
     @grid_feed_total = find_current_grid_kwh(UUID_GRID_FEED_TOTAL, data)
     @grid_feed_per_month = find_current_grid_kwh(UUID_GRID_FEED_PER_MONTH, data)
     @grid_feed_current = find_current_grid_kwh(UUID_GRID_FEED_CURRENT, data)
-    @grid_supply_total= find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
+    @grid_supply_total = find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
     @grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
     @grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
     @energy_consumption_per_month = 0.0 # not implemented yet
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
+    set_default_values
+  end
+
+  def set_default_values
+    @grid_feed_total = 0.0
+    @grid_feed_per_month = 0.0
+    @grid_feed_current = 0.0
+    @grid_supply_total = 0.0
+    @grid_supply_per_month = 0.0
+    @grid_supply_current = 0.0
+    @energy_consumption_per_month = 0.0
   end
 end
 

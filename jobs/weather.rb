@@ -26,8 +26,15 @@ class WeatherClient
     @weather_code = current['weather_code']
     @wind_speed = current['wind_speed_10m'].round(1)
     @weather_description, @weather_icon = weather_code_to_description(@weather_code)
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[Weather] Verbindung zu Open-Meteo API fehlgeschlagen: Server nicht erreichbar"
+    set_default_values
   rescue => e
-    puts "Error fetching weather data: #{e.message}"
+    puts "[Weather] Fehler: #{e.message}"
+    set_default_values
+  end
+
+  def set_default_values
     @temperature = 0.0
     @weather_code = 0
     @wind_speed = 0.0
