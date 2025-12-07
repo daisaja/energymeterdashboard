@@ -12,12 +12,14 @@ GRID_METER_HOST = ENV["GRID_METER_HOST"]
 VZ_LOGGER_URL = "http://#{GRID_METER_HOST}:8081/"
 
 class GridMeasurements
+  @@last_values = {}
+
   attr_reader :grid_feed_total, :grid_feed_per_month, :grid_feed_current,
   :grid_supply_total, :grid_supply_per_month, :grid_supply_current,
   :energy_consumption_per_month
 
-  def initialize()
-    fetch_data_from_grid_meter()
+  def initialize
+    fetch_data_from_grid_meter
   end
 
   def to_s()
@@ -31,16 +33,42 @@ class GridMeasurements
     energy_consumption_per_month: #{energy_consumption_per_month}"
   end
 
-  def fetch_data_from_grid_meter()
+  def fetch_data_from_grid_meter
     response = HTTParty.get(VZ_LOGGER_URL)
     data = response.parsed_response['data']
     @grid_feed_total = find_current_grid_kwh(UUID_GRID_FEED_TOTAL, data)
     @grid_feed_per_month = find_current_grid_kwh(UUID_GRID_FEED_PER_MONTH, data)
     @grid_feed_current = find_current_grid_kwh(UUID_GRID_FEED_CURRENT, data)
-    @grid_supply_total= find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
+    @grid_supply_total = find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
     @grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
     @grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
     @energy_consumption_per_month = 0.0 # not implemented yet
+    save_values
+  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
+    puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
+    restore_last_values
+  end
+
+  def save_values
+    @@last_values = {
+      grid_feed_total: @grid_feed_total,
+      grid_feed_per_month: @grid_feed_per_month,
+      grid_feed_current: @grid_feed_current,
+      grid_supply_total: @grid_supply_total,
+      grid_supply_per_month: @grid_supply_per_month,
+      grid_supply_current: @grid_supply_current,
+      energy_consumption_per_month: @energy_consumption_per_month
+    }
+  end
+
+  def restore_last_values
+    @grid_feed_total = @@last_values[:grid_feed_total] || 0.0
+    @grid_feed_per_month = @@last_values[:grid_feed_per_month] || 0.0
+    @grid_feed_current = @@last_values[:grid_feed_current] || 0.0
+    @grid_supply_total = @@last_values[:grid_supply_total] || 0.0
+    @grid_supply_per_month = @@last_values[:grid_supply_per_month] || 0.0
+    @grid_supply_current = @@last_values[:grid_supply_current] || 0.0
+    @energy_consumption_per_month = @@last_values[:energy_consumption_per_month] || 0.0
   end
 end
 
