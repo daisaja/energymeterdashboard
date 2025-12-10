@@ -1,10 +1,23 @@
-<h1 class="title" data-bind="title">Wetter</h1>
-
-<div class="weather-content">
-  <span class="weather-icon" data-bind="icon"></span>
-  <span class="weather-temp" data-bind="current | append suffix"></span>
-</div>
-
-<p class="more-info" data-bind="moreinfo"></p>
+<table>
+  <tr>
+    <td colspan="2">
+      <h1 data-bind="current"></h1>
+      <h2 data-bind-class="climacon_code | prepend 'climacon-'"></h2>
+      <h3>Heute</h3>
+    </td>
+  </tr>
+  <tr>
+    <td class="forecast top center">
+      <h2 data-bind-class="forecast1_climacon | prepend 'climacon-'"></h2>
+      <p data-bind="forecast1"></p>
+      <h3 data-bind="forecast1_day"></h3>
+    </td>
+    <td class="forecast top">
+      <h2 data-bind-class="forecast2_climacon | prepend 'climacon-'"></h2>
+      <p data-bind="forecast2"></p>
+      <h3 data-bind="forecast2_day"></h3>
+    </td>
+  </tr>
+</table>
 
 <p class="updated-at" data-bind="updatedAtMessage"></p>
