@@ -187,17 +187,25 @@ class UnitTest < Minitest::Test
   end
 
   # WeatherClient Tests
-  def test_weather_client
-    weather_response = {
+  def weather_response_with_forecast(current_temp: 18.5, current_code: 3, wind: 12.3)
+    {
       'current' => {
-        'temperature_2m' => 18.5,
-        'weather_code' => 3,
-        'wind_speed_10m' => 12.3
+        'temperature_2m' => current_temp,
+        'weather_code' => current_code,
+        'wind_speed_10m' => wind
+      },
+      'daily' => {
+        'time' => ['2025-12-10', '2025-12-11', '2025-12-12'],
+        'weather_code' => [current_code, 61, 0],
+        'temperature_2m_max' => [10.0, 8.0, 12.0],
+        'temperature_2m_min' => [2.0, 1.0, 3.0]
       }
     }
+  end
 
+  def test_weather_client
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal(18.5, weather.temperature)
@@ -205,6 +213,20 @@ class UnitTest < Minitest::Test
     assert_equal(12.3, weather.wind_speed)
     assert_equal('Teilweise bewölkt', weather.weather_description)
     assert_equal('⛅', weather.weather_icon)
+    assert_equal(26, weather.climacon_code)
+  end
+
+  def test_weather_forecast
+    stub_request(:get, OPEN_METEO_API_REGEX)
+      .to_return(status: 200, body: weather_response_with_forecast.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    weather = WeatherClient.new
+    assert_equal('1° - 8°', weather.forecast1)
+    assert_equal(12, weather.forecast1_climacon)
+    assert_equal('Donnerstag', weather.forecast1_day)
+    assert_equal('3° - 12°', weather.forecast2)
+    assert_equal(32, weather.forecast2_climacon)
+    assert_equal('Freitag', weather.forecast2_day)
   end
 
   def test_weather_client_error_handling
@@ -218,19 +240,14 @@ class UnitTest < Minitest::Test
     assert_equal(0.0, weather.wind_speed)
     assert_equal('Keine Daten', weather.weather_description)
     assert_equal('?', weather.weather_icon)
+    assert_equal(32, weather.climacon_code)
+    assert_equal('-', weather.forecast1)
+    assert_equal('-', weather.forecast1_day)
   end
 
   def test_weather_client_keeps_last_values_on_error
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 18.5,
-        'weather_code' => 3,
-        'wind_speed_10m' => 12.3
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal(18.5, weather.temperature)
@@ -246,104 +263,65 @@ class UnitTest < Minitest::Test
     assert_equal(12.3, weather2.wind_speed)
     assert_equal('Teilweise bewölkt', weather2.weather_description)
     assert_equal('⛅', weather2.weather_icon)
+    assert_equal(26, weather2.climacon_code)
+    assert_equal('1° - 8°', weather2.forecast1)
+    assert_equal('Donnerstag', weather2.forecast1_day)
   end
 
   def test_weather_code_descriptions
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 5.0,
-        'weather_code' => 71,
-        'wind_speed_10m' => 8.0
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast(current_temp: 5.0, current_code: 71, wind: 8.0).to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Schnee', weather.weather_description)
     assert_equal('❄', weather.weather_icon)
+    assert_equal(16, weather.climacon_code)
   end
 
   def test_weather_code_clear_sky
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 25.0,
-        'weather_code' => 0,
-        'wind_speed_10m' => 5.0
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast(current_temp: 25.0, current_code: 0, wind: 5.0).to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Klar', weather.weather_description)
     assert_equal('☀', weather.weather_icon)
+    assert_equal(32, weather.climacon_code)
   end
 
   def test_weather_code_rain
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 12.0,
-        'weather_code' => 61,
-        'wind_speed_10m' => 15.0
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast(current_temp: 12.0, current_code: 61, wind: 15.0).to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Regen', weather.weather_description)
     assert_equal('☂', weather.weather_icon)
+    assert_equal(12, weather.climacon_code)
   end
 
   def test_weather_code_thunderstorm
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 18.0,
-        'weather_code' => 95,
-        'wind_speed_10m' => 25.0
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast(current_temp: 18.0, current_code: 95, wind: 25.0).to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Gewitter', weather.weather_description)
     assert_equal('⚡', weather.weather_icon)
+    assert_equal(6, weather.climacon_code)
   end
 
   def test_weather_code_unknown
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 10.0,
-        'weather_code' => 999,
-        'wind_speed_10m' => 10.0
-      }
-    }
-
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: weather_response_with_forecast(current_temp: 10.0, current_code: 999, wind: 10.0).to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal('Unbekannt', weather.weather_description)
     assert_equal('?', weather.weather_icon)
+    assert_equal(32, weather.climacon_code)
   end
 
   def test_weather_temperature_rounding
-    weather_response = {
-      'current' => {
-        'temperature_2m' => 18.567,
-        'weather_code' => 1,
-        'wind_speed_10m' => 12.345
-      }
-    }
-
+    response = weather_response_with_forecast(current_temp: 18.567, current_code: 1, wind: 12.345)
     stub_request(:get, OPEN_METEO_API_REGEX)
-      .to_return(status: 200, body: weather_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     weather = WeatherClient.new
     assert_equal(18.6, weather.temperature)
