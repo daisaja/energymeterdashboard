@@ -65,8 +65,8 @@ $background-color: darkturquoise;
   }
 }
 
-// Temperature-based background colors
-$background-colors: #52a5ff, #48efff, #4dff5a, #ffe33d, #ff9d37, #ff5131, #ff2c59;
+// Temperature-based background colors (darkened for better contrast)
+$background-colors: #2a5a8f, #26808f, #289030, #8f7d20, #8f571c, #8f2c1a, #8f1830;
 
 @mixin weather-background($color, $percentage: 25%) {
   background-color: $color;
