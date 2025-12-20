@@ -11,6 +11,10 @@ gem "influxdb-client"
 # graphql client for tibber
 gem "graphql-client"
 
+group :development do
+  gem "ruby-lsp", require: false
+end
+
 group :test do
   gem "minitest"
   gem "rake"

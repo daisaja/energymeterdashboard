@@ -66,6 +66,7 @@ GEM
       concurrent-ruby (~> 1.0)
     influxdb-client (3.1.0)
     json (2.8.2)
+    language_server-protocol (3.17.0.5)
     logger (1.6.1)
     mini_mime (1.1.5)
     minitest (5.25.2)
@@ -74,13 +75,20 @@ GEM
       bigdecimal (~> 3.1)
     mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
+    prism (1.7.0)
     public_suffix (6.0.2)
     raabro (1.4.0)
     rack (2.2.10)
     rack-protection (2.2.4)
       rack
     rake (13.2.1)
+    rbs (3.9.5)
+      logger
     rexml (3.3.9)
+    ruby-lsp (0.26.4)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 5)
     ruby2_keywords (0.0.5)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
@@ -152,6 +160,7 @@ DEPENDENCIES
   json
   minitest
   rake
+  ruby-lsp
   simplecov
   smashing
   webmock
