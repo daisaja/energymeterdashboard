@@ -35,10 +35,56 @@ sudo umount /dev/sdc1
 ~/Downloads/volkszaehler_latest$ sudo dd if=./2019-07-07-volkszaehler_raspian_buster.img | pv -s 8G | sudo dd of=/dev/sdc bs=1M
 
 
+## Architecture
+
+### System Context
+
 ```mermaid
-  graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
+C4Context
+  title System Context – Energy Meter Dashboard
+
+  Person(user, "Homeowner", "Monitors energy consumption\nand solar production at home")
+
+  System(dashboard, "Energy Meter Dashboard", "Smashing-based web dashboard\nrunning in Docker on a Raspberry Pi")
+
+  System_Ext(vzlogger, "Volkszähler / vzlogger", "Reads grid meter (E320)\nvia SML optical interface")
+  System_Ext(opendtu, "OpenDTU", "Reads Hoymiles solar inverter\nvia radio protocol")
+  System_Ext(openmeteo, "Open-Meteo API", "Public weather forecast API\n(DWD data, no key required)")
+  System_Ext(tibber, "Tibber API", "GraphQL API for\nenergy spot prices")
+  System_Ext(influxdb, "InfluxDB", "Time-series database\nfor long-term storage")
+
+  Rel(user, dashboard, "Views", "Browser / HTTP 3030")
+  Rel(dashboard, vzlogger, "Polls every 3s", "HTTP 8081")
+  Rel(dashboard, opendtu, "Polls every 3s", "HTTP 80")
+  Rel(dashboard, openmeteo, "Polls every 10min", "HTTPS")
+  Rel(dashboard, tibber, "Polls periodically", "HTTPS / GraphQL")
+  Rel(dashboard, influxdb, "Exports metrics", "HTTP 8086")
+```
+
+### Container Diagram
+
+```mermaid
+C4Container
+  title Container Diagram – Energy Meter Dashboard
+
+  Person(user, "Homeowner")
+
+  Container_Boundary(docker, "Docker on Raspberry Pi") {
+    Container(smashing, "Smashing Dashboard", "Ruby / Smashing framework", "Serves the web UI and runs scheduled background jobs")
+    ContainerDb(statefile, "state.json", "JSON file on /data volume", "Persists daily/monthly consumption baselines across restarts")
+  }
+
+  System_Ext(vzlogger, "vzlogger", "HTTP API :8081\nGrid meter readings (SML)")
+  System_Ext(opendtu, "OpenDTU", "HTTP API :80\nSolar inverter live data")
+  System_Ext(openmeteo, "Open-Meteo", "HTTPS\nWeather forecast")
+  System_Ext(tibber, "Tibber", "HTTPS GraphQL\nEnergy prices")
+  System_Ext(influxdb, "InfluxDB", "HTTP :8086\nTime-series storage")
+
+  Rel(user, smashing, "Views dashboard", "HTTP :3030")
+  Rel(smashing, vzlogger, "GridMeterClient – polls supply/feed totals & current power", "HTTP")
+  Rel(smashing, opendtu, "OpenDTUMeterClient – polls PV power, daily & total yield", "HTTP")
+  Rel(smashing, openmeteo, "WeatherClient – polls temperature & forecast", "HTTPS")
+  Rel(smashing, tibber, "TibberClient – polls spot price", "HTTPS")
+  Rel(smashing, influxdb, "InfluxExporter – writes measurements", "HTTP")
+  Rel(smashing, statefile, "StateManager – reads/writes baselines", "File I/O")
 ```
