@@ -18,7 +18,7 @@ GEM
       public_suffix (>= 2.0.2, < 7.0)
     base64 (0.2.0)
     benchmark (0.4.0)
-    bigdecimal (3.1.8)
+    bigdecimal (4.0.1)
     coffee-script (2.4.1)
       coffee-script-source
       execjs
@@ -28,7 +28,7 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
-    csv (3.3.0)
+    csv (3.3.5)
     daemons (1.4.1)
     docile (1.4.1)
     drb (2.2.1)
@@ -58,7 +58,7 @@ GEM
       activesupport (>= 3.0)
       graphql (>= 1.13.0)
     hashdiff (1.2.1)
-    httparty (0.22.0)
+    httparty (0.24.0)
       csv
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
@@ -72,8 +72,8 @@ GEM
     minitest (6.0.1)
       prism (~> 1.5)
     multi_json (1.15.0)
-    multi_xml (0.7.1)
-      bigdecimal (~> 3.1)
+    multi_xml (0.8.1)
+      bigdecimal (>= 3.1, < 5)
     mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
     ostruct (0.6.3)
