@@ -384,8 +384,8 @@ class UnitTest < Minitest::Test
     heating = HeatingMeasurements.new
     assert_equal(1500, heating.heating_watts_current)
     assert_equal(70.0, heating.heating_per_month)
-    assert_equal(1, heating.heating_kwh_current_day)
-    assert_equal(1, heating.heating_kwh_last_day)
+    assert_equal(1.0, heating.heating_kwh_current_day)
+    assert_equal(1.0, heating.heating_kwh_last_day)
   end
 
   def test_heating_meter_client_error_handling
@@ -446,8 +446,8 @@ class UnitTest < Minitest::Test
     heating2 = HeatingMeasurements.new
     assert_equal(1500, heating2.heating_watts_current)
     assert_equal(70.0, heating2.heating_per_month)
-    assert_equal(1, heating2.heating_kwh_current_day)
-    assert_equal(1, heating2.heating_kwh_last_day)
+    assert_equal(1.0, heating2.heating_kwh_current_day)
+    assert_equal(1.0, heating2.heating_kwh_last_day)
   end
 
   # SolarMeasurements Tests

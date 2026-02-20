@@ -1,4 +1,5 @@
 require_relative 'meter_helper/grid_meter_client'
+require_relative 'meter_helper/solar_meter_client'
 require_relative 'meter_helper/heating_meter_client'
 
 SCHEDULER.every '3s' do
