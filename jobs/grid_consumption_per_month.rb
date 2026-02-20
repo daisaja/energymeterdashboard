@@ -1,41 +1,41 @@
 require_relative 'meter_helper/grid_meter_client'
+require_relative 'meter_helper/state_manager'
 
-$kwh_supply_current_month = 0.0
-$kwh_supply_last_month    = 0.0
+$kwh_supply_current_month       = 0.0
+$kwh_supply_last_month          = 0.0
 $meter_count_supply_month_start = 0.0
 
-$kwh_feed_current_month = 0.0
-$kwh_feed_last_month    = 0.0
+$kwh_feed_current_month       = 0.0
+$kwh_feed_last_month          = 0.0
 $meter_count_feed_month_start = 0.0
 
-$kwh_supply_current_year = 0.0
-$kwh_feed_current_year   = 0.0
+$kwh_supply_current_year       = 0.0
+$kwh_feed_current_year         = 0.0
 $meter_count_supply_year_start = 0.0
 $meter_count_feed_year_start   = 0.0
+
+$month_state_initialized = false
 
 SCHEDULER.every '60s', :first_in => 0 do |job|
   grid_measurements = GridMeasurements.new()
   supply = grid_measurements.grid_supply_total
   feed   = grid_measurements.grid_feed_total
 
-  # Init beim ersten Lauf: Zählerstand als Startpunkt merken
-  if $meter_count_supply_month_start == 0.0
-    $meter_count_supply_month_start = supply
-    $meter_count_feed_month_start   = feed
-    $meter_count_supply_year_start  = supply
-    $meter_count_feed_year_start    = feed
+  unless $month_state_initialized
+    load_month_state(supply, feed)
+    $month_state_initialized = true
   end
 
   if is_new_month()
+    $kwh_supply_last_month          = $kwh_supply_current_month
+    $kwh_feed_last_month            = $kwh_feed_current_month
     $meter_count_supply_month_start = supply
-    $kwh_supply_last_month = $kwh_supply_current_month
-    $meter_count_feed_month_start = feed
-    $kwh_feed_last_month = $kwh_feed_current_month
-    # Jahreswechsel: Januar = neues Jahr
+    $meter_count_feed_month_start   = feed
     if Time.now.month == 1
       $meter_count_supply_year_start = supply
       $meter_count_feed_year_start   = feed
     end
+    StateManager.save(day: current_day_state, month: current_month_state, year: current_year_state)
   end
 
   $kwh_supply_current_month = (supply - $meter_count_supply_month_start).round(1)
@@ -47,4 +47,49 @@ SCHEDULER.every '60s', :first_in => 0 do |job|
   send_event('meter_grid_feed_month',   { current: $kwh_feed_current_month,   last: $kwh_feed_last_month })
   send_event('meter_grid_supply_year',  { value: $kwh_supply_current_year })
   send_event('meter_grid_feed_year',    { value: $kwh_feed_current_year })
+end
+
+# Load persisted month/year baselines on startup.
+def load_month_state(current_supply, current_feed)
+  state = StateManager.load
+
+  if state && state['month']['year_month'] == Time.now.strftime('%Y-%m')
+    puts "[MonthJob] Restoring month state from #{state['saved_at']}"
+    $meter_count_supply_month_start = state['month']['supply_baseline'].to_f
+    $meter_count_feed_month_start   = state['month']['feed_baseline'].to_f
+    $kwh_supply_last_month          = state['month']['last_supply'].to_f
+    $kwh_feed_last_month            = state['month']['last_feed'].to_f
+  else
+    puts "[MonthJob] No valid month state — using current reading as baseline"
+    $meter_count_supply_month_start = current_supply
+    $meter_count_feed_month_start   = current_feed
+  end
+
+  if state && state['year']['year'] == Time.now.year.to_s
+    puts "[MonthJob] Restoring year state from #{state['saved_at']}"
+    $meter_count_supply_year_start = state['year']['supply_baseline'].to_f
+    $meter_count_feed_year_start   = state['year']['feed_baseline'].to_f
+  else
+    puts "[MonthJob] No valid year state — using current reading as baseline"
+    $meter_count_supply_year_start = current_supply
+    $meter_count_feed_year_start   = current_feed
+  end
+end
+
+def current_month_state
+  {
+    'year_month'      => Time.now.strftime('%Y-%m'),
+    'supply_baseline' => $meter_count_supply_month_start,
+    'feed_baseline'   => $meter_count_feed_month_start,
+    'last_supply'     => $kwh_supply_last_month,
+    'last_feed'       => $kwh_feed_last_month
+  }
+end
+
+def current_year_state
+  {
+    'year'            => Time.now.year.to_s,
+    'supply_baseline' => $meter_count_supply_year_start,
+    'feed_baseline'   => $meter_count_feed_year_start
+  }
 end

@@ -1,5 +1,6 @@
 *DS_STORE
 history.yml
+.env-exports-für source 
 .env
 .idea
 .vscode/

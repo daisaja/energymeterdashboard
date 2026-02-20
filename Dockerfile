@@ -48,4 +48,6 @@ COPY --from=builder /usr/src/app ./
 ENV PORT=3030
 EXPOSE $PORT
 
+RUN mkdir -p /data
+
 CMD ["smashing", "start"]
