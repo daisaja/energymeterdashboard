@@ -1,11 +1,8 @@
 require 'httparty'
 
-UUID_GRID_FEED_CURRENT = 'aface870-4a00-11ea-aa3c-8f09c95f5b9c' # OBIS: 255-255::2.7.0*255
-UUID_GRID_FEED_TOTAL = 'e564e6e0-4a00-11ea-af71-a55e127a0bfc' # OBIS: 255-255:2.8.0*255
-UUID_GRID_FEED_PER_MONTH = '0185bb38-769c-401f-9372-b89d615c9920' # OBIS: 255-255:2.9.0*255
-UUID_GRID_SUPPLY_TOTAL = '007aeef0-4a01-11ea-8773-6bda87ed0b9a' # OBIS: 255-255:1.8.0*255
-UUID_GRID_SUPPLY_PER_MONTH = '472573b2-a888-4851-ada9-ffd8cd386001' # OBIS: 255-255:1.9.0*255
-UUID_GRID_SUPPLY_CURRENT = 'c6ada300-4a00-11ea-99d0-7577b1612d91' # OBIS: 255-255:1.7.0*255
+UUID_GRID_SUPPLY_CURRENT = '2c58c270-0e65-11f1-8833-19d9403165de' # OBIS: 1-0:16.7.0 Momentanleistung (W, signed) - positiv=Bezug, negativ=Einspeisung
+UUID_GRID_FEED_TOTAL = '11755f30-0e65-11f1-a7d4-cfd94d2fa168' # OBIS: 1-0:2.8.0 Einspeisung gesamt (Wh)
+UUID_GRID_SUPPLY_TOTAL = 'e52fc000-0e64-11f1-b37f-4db1c53870b5' # OBIS: 1-0:1.8.0 Bezug gesamt (Wh)
 
 GRID_METER_HOST = ENV["GRID_METER_HOST"]
 
@@ -36,13 +33,21 @@ class GridMeasurements
   def fetch_data_from_grid_meter
     response = HTTParty.get(VZ_LOGGER_URL)
     data = response.parsed_response['data']
-    @grid_feed_total = find_current_grid_kwh(UUID_GRID_FEED_TOTAL, data)
-    @grid_feed_per_month = find_current_grid_kwh(UUID_GRID_FEED_PER_MONTH, data)
-    @grid_feed_current = find_current_grid_kwh(UUID_GRID_FEED_CURRENT, data)
-    @grid_supply_total = find_current_grid_kwh(UUID_GRID_SUPPLY_TOTAL, data)
-    @grid_supply_per_month = find_current_grid_kwh(UUID_GRID_SUPPLY_PER_MONTH, data)
-    @grid_supply_current = find_current_grid_kwh(UUID_GRID_SUPPLY_CURRENT, data)
-    @energy_consumption_per_month = 0.0 # not implemented yet
+
+    # Zählerstände: E320 liefert Wh via SML → in kWh umrechnen
+    @grid_supply_total = find_current_grid_value(UUID_GRID_SUPPLY_TOTAL, data) / 1000.0
+    @grid_feed_total   = find_current_grid_value(UUID_GRID_FEED_TOTAL, data) / 1000.0
+
+    # Momentanleistung: 16.7.0 liefert W vorzeichenbehaftet → in kW aufteilen
+    raw_power_w = find_current_grid_value(UUID_GRID_SUPPLY_CURRENT, data)
+    @grid_supply_current = raw_power_w > 0 ? (raw_power_w / 1000.0) : 0.0
+    @grid_feed_current   = raw_power_w < 0 ? (raw_power_w.abs / 1000.0) : 0.0
+
+    # Perioden-Register nicht verfügbar am E320 via SML
+    @grid_supply_per_month = 0.0
+    @grid_feed_per_month   = 0.0
+    @energy_consumption_per_month = 0.0
+
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
@@ -72,24 +77,22 @@ class GridMeasurements
   end
 end
 
-def find_current_grid_kwh(uuid, data)
- current_grid_watts = 0
- data.each do |value|
-   if value['uuid'] == uuid
-     current_grid_watts = value['tuples'][0].last()
-     break
-   end
- end
- return current_grid_watts
+def find_current_grid_value(uuid, data)
+  data.each do |value|
+    if value['uuid'] == uuid
+      tuples = value['tuples']
+      return tuples[0].last() if tuples && !tuples.empty?
+    end
+  end
+  return 0
 end
 
-def is_new_day()
-  now = Time.now
+def is_new_day(now = Time.now)
   midnight = Time.new(now.year, now.month, now.day)
-  _600s_after_midnight = midnight + 600 # Time window 600s
-  if now > midnight and now < _600s_after_midnight
-    return true
-  else
-    return false
-  end
+  now > midnight && now < midnight + 600
+end
+
+def is_new_month(now = Time.now)
+  first_of_month = Time.new(now.year, now.month, 1)
+  now > first_of_month && now < first_of_month + 600
 end

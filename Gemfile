@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'smashing'
+gem 'ostruct' # required explicitly since Ruby 4.0 removed it from default gems
 
 # energy meter
 gem 'httparty'

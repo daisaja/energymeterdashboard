@@ -34,32 +34,21 @@ class UnitTest < Minitest::Test
   end
 
   def test_grid_meter_client
-    # Mock the Grid Meter API response
+    # E320 via SML: 3 Kanäle, Zählerstände in Wh, Momentanleistung in W (vorzeichenbehaftet)
+    # Positiver 16.7.0-Wert → Bezug, kein Einspeisung
     grid_meter_response = {
       'data' => [
         {
-          'uuid' => 'aface870-4a00-11ea-aa3c-8f09c95f5b9c',
-          'tuples' => [[1234567890000, 2500]]
+          'uuid' => '11755f30-0e65-11f1-a7d4-cfd94d2fa168',  # UUID_GRID_FEED_TOTAL
+          'tuples' => [[1234567890000, 12345000]]              # 12345000 Wh = 12345.0 kWh
         },
         {
-          'uuid' => 'e564e6e0-4a00-11ea-af71-a55e127a0bfc',
-          'tuples' => [[1234567890000, 12345]]
+          'uuid' => 'e52fc000-0e64-11f1-b37f-4db1c53870b5',  # UUID_GRID_SUPPLY_TOTAL
+          'tuples' => [[1234567890000, 8765000]]               # 8765000 Wh = 8765.0 kWh
         },
         {
-          'uuid' => '0185bb38-769c-401f-9372-b89d615c9920',
-          'tuples' => [[1234567890000, 542]]
-        },
-        {
-          'uuid' => '007aeef0-4a01-11ea-8773-6bda87ed0b9a',
-          'tuples' => [[1234567890000, 8765]]
-        },
-        {
-          'uuid' => '472573b2-a888-4851-ada9-ffd8cd386001',
-          'tuples' => [[1234567890000, 234]]
-        },
-        {
-          'uuid' => 'c6ada300-4a00-11ea-99d0-7577b1612d91',
-          'tuples' => [[1234567890000, 1200]]
+          'uuid' => '2c58c270-0e65-11f1-8833-19d9403165de',  # UUID_GRID_SUPPLY_CURRENT (16.7.0 signed)
+          'tuples' => [[1234567890000, 1200]]                  # 1200 W = 1.2 kW, positiv = Bezug
         }
       ]
     }
@@ -68,12 +57,52 @@ class UnitTest < Minitest::Test
       .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     grid_measures = GridMeasurements.new()
-    assert_equal(2500, grid_measures.grid_feed_current)
-    assert_equal(12345, grid_measures.grid_feed_total)
-    assert_equal(542, grid_measures.grid_feed_per_month)
-    assert_equal(8765, grid_measures.grid_supply_total)
-    assert_equal(234, grid_measures.grid_supply_per_month)
-    assert_equal(1200, grid_measures.grid_supply_current)
+    assert_equal(12345.0, grid_measures.grid_feed_total)
+    assert_equal(0.0,     grid_measures.grid_feed_per_month)   # nicht mehr vom Zähler geliefert
+    assert_equal(0.0,     grid_measures.grid_feed_current)     # kein Einspeisung bei positivem Wert
+    assert_equal(8765.0,  grid_measures.grid_supply_total)
+    assert_equal(0.0,     grid_measures.grid_supply_per_month) # nicht mehr vom Zähler geliefert
+    assert_equal(1.2,     grid_measures.grid_supply_current)
+  end
+
+  def test_grid_meter_client_feed_current_with_negative_power
+    # Negativer 16.7.0-Wert → Einspeisung, kein Bezug
+    grid_meter_response = {
+      'data' => [
+        { 'uuid' => '11755f30-0e65-11f1-a7d4-cfd94d2fa168', 'tuples' => [[1234567890000, 0]] },
+        { 'uuid' => 'e52fc000-0e64-11f1-b37f-4db1c53870b5', 'tuples' => [[1234567890000, 0]] },
+        {
+          'uuid' => '2c58c270-0e65-11f1-8833-19d9403165de',  # 16.7.0 signed
+          'tuples' => [[1234567890000, -2500]]                # -2500 W = 2.5 kW Einspeisung
+        }
+      ]
+    }
+
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    grid_measures = GridMeasurements.new()
+    assert_equal(2.5, grid_measures.grid_feed_current)
+    assert_equal(0.0, grid_measures.grid_supply_current)
+  end
+
+  def test_grid_meter_client_missing_tuples
+    # 16.7.0 ohne tuples-Array (E320 Momentanleistung noch nicht im erweiterten Modus)
+    grid_meter_response = {
+      'data' => [
+        { 'uuid' => 'e52fc000-0e64-11f1-b37f-4db1c53870b5', 'tuples' => [[1234567890000, 526000]] },
+        { 'uuid' => '11755f30-0e65-11f1-a7d4-cfd94d2fa168', 'tuples' => [[1234567890000, 0]] },
+        { 'uuid' => '2c58c270-0e65-11f1-8833-19d9403165de', 'last' => 0, 'interval' => -1 }
+      ]
+    }
+
+    stub_request(:get, "http://192.168.178.103:8081/")
+      .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+
+    grid_measures = GridMeasurements.new()
+    assert_equal(526.0, grid_measures.grid_supply_total)
+    assert_equal(0.0,   grid_measures.grid_supply_current)  # kein Absturz bei fehlendem tuples
+    assert_equal(0.0,   grid_measures.grid_feed_current)
   end
 
   def test_grid_meter_client_connection_refused_first_time
@@ -101,15 +130,12 @@ class UnitTest < Minitest::Test
   end
 
   def test_grid_meter_client_keeps_last_values_on_error
-    # First successful request
+    # First successful request: negativer 16.7.0-Wert → Einspeisung
     grid_meter_response = {
       'data' => [
-        { 'uuid' => 'aface870-4a00-11ea-aa3c-8f09c95f5b9c', 'tuples' => [[1234567890000, 2500]] },
-        { 'uuid' => 'e564e6e0-4a00-11ea-af71-a55e127a0bfc', 'tuples' => [[1234567890000, 12345]] },
-        { 'uuid' => '0185bb38-769c-401f-9372-b89d615c9920', 'tuples' => [[1234567890000, 542]] },
-        { 'uuid' => '007aeef0-4a01-11ea-8773-6bda87ed0b9a', 'tuples' => [[1234567890000, 8765]] },
-        { 'uuid' => '472573b2-a888-4851-ada9-ffd8cd386001', 'tuples' => [[1234567890000, 234]] },
-        { 'uuid' => 'c6ada300-4a00-11ea-99d0-7577b1612d91', 'tuples' => [[1234567890000, 1200]] }
+        { 'uuid' => '11755f30-0e65-11f1-a7d4-cfd94d2fa168', 'tuples' => [[1234567890000, 12345000]] },
+        { 'uuid' => 'e52fc000-0e64-11f1-b37f-4db1c53870b5', 'tuples' => [[1234567890000, 8765000]] },
+        { 'uuid' => '2c58c270-0e65-11f1-8833-19d9403165de', 'tuples' => [[1234567890000, -2500]] }
       ]
     }
 
@@ -117,7 +143,7 @@ class UnitTest < Minitest::Test
       .to_return(status: 200, body: grid_meter_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
 
     grid_measures = GridMeasurements.new
-    assert_equal(2500, grid_measures.grid_feed_current)
+    assert_equal(2.5, grid_measures.grid_feed_current)
 
     # Second request fails - should keep old values
     WebMock.reset!
@@ -125,8 +151,8 @@ class UnitTest < Minitest::Test
       .to_raise(Errno::ECONNREFUSED)
 
     grid_measures2 = GridMeasurements.new
-    assert_equal(2500, grid_measures2.grid_feed_current)
-    assert_equal(12345, grid_measures2.grid_feed_total)
+    assert_equal(2.5,     grid_measures2.grid_feed_current)
+    assert_equal(12345.0, grid_measures2.grid_feed_total)
   end
 
   def test_opendtu_meter_client
@@ -534,24 +560,30 @@ class UnitTest < Minitest::Test
 
   # is_new_day helper function tests
   def test_is_new_day_at_midnight
-    # Stub Time.now to return a time just after midnight
-    Time.stub :now, Time.new(2024, 1, 15, 0, 5, 0) do
-      assert_equal(true, is_new_day())
-    end
+    assert_equal(true, is_new_day(Time.new(2024, 1, 15, 0, 5, 0)))
   end
 
   def test_is_new_day_during_day
-    # Stub Time.now to return midday
-    Time.stub :now, Time.new(2024, 1, 15, 12, 0, 0) do
-      assert_equal(false, is_new_day())
-    end
+    assert_equal(false, is_new_day(Time.new(2024, 1, 15, 12, 0, 0)))
   end
 
   def test_is_new_day_after_window
-    # Stub Time.now to return 11 minutes after midnight (outside 600s window)
-    Time.stub :now, Time.new(2024, 1, 15, 0, 11, 0) do
-      assert_equal(false, is_new_day())
-    end
+    # 11 Minuten nach Mitternacht = außerhalb des 600s-Fensters
+    assert_equal(false, is_new_day(Time.new(2024, 1, 15, 0, 11, 0)))
+  end
+
+  # is_new_month helper function tests
+  def test_is_new_month_at_start_of_month
+    assert_equal(true, is_new_month(Time.new(2024, 2, 1, 0, 5, 0)))
+  end
+
+  def test_is_new_month_mid_month
+    assert_equal(false, is_new_month(Time.new(2024, 2, 15, 12, 0, 0)))
+  end
+
+  def test_is_new_month_after_window
+    # 11 Minuten nach Monatsbeginn = außerhalb des 600s-Fensters
+    assert_equal(false, is_new_month(Time.new(2024, 2, 1, 0, 11, 0)))
   end
 
 end

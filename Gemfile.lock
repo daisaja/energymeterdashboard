@@ -36,17 +36,17 @@ GEM
       tzinfo
     eventmachine (1.2.7)
     execjs (2.10.0)
-    ffi (1.17.1)
-    ffi (1.17.1-aarch64-linux-gnu)
-    ffi (1.17.1-aarch64-linux-musl)
-    ffi (1.17.1-arm-linux-gnu)
-    ffi (1.17.1-arm-linux-musl)
-    ffi (1.17.1-arm64-darwin)
-    ffi (1.17.1-x86-linux-gnu)
-    ffi (1.17.1-x86-linux-musl)
-    ffi (1.17.1-x86_64-darwin)
-    ffi (1.17.1-x86_64-linux-gnu)
-    ffi (1.17.1-x86_64-linux-musl)
+    ffi (1.17.3)
+    ffi (1.17.3-aarch64-linux-gnu)
+    ffi (1.17.3-aarch64-linux-musl)
+    ffi (1.17.3-arm-linux-gnu)
+    ffi (1.17.3-arm-linux-musl)
+    ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86-linux-gnu)
+    ffi (1.17.3-x86-linux-musl)
+    ffi (1.17.3-x86_64-darwin)
+    ffi (1.17.3-x86_64-linux-gnu)
+    ffi (1.17.3-x86_64-linux-musl)
     fiber-storage (1.0.0)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
@@ -69,12 +69,14 @@ GEM
     language_server-protocol (3.17.0.5)
     logger (1.6.1)
     mini_mime (1.1.5)
-    minitest (5.25.2)
+    minitest (6.0.1)
+      prism (~> 1.5)
     multi_json (1.15.0)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
     mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
+    ostruct (0.6.3)
     prism (1.7.0)
     public_suffix (6.0.2)
     raabro (1.4.0)
@@ -159,6 +161,7 @@ DEPENDENCIES
   influxdb-client
   json
   minitest
+  ostruct
   rake
   ruby-lsp
   simplecov
