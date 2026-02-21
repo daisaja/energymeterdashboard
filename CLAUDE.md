@@ -67,7 +67,10 @@ stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
 
 ## Git Workflow
 
+Before starting any new feature or bugfix:
+1. `git checkout master && git pull`
+2. `git checkout -b feature/<name>` (always work on a feature branch, never directly on master)
+
 After creating and merging a PR, always:
-1. `git checkout master`
-2. `git pull`
-3. `git branch -d <feature-branch>` (delete the local feature branch)
+1. `git checkout master && git pull`
+2. `git branch -d <feature-branch>` (delete the local feature branch)
