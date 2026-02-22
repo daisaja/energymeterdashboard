@@ -1,5 +1,8 @@
 require_relative 'test_helper'
 require_relative '../jobs/meter_helper/state_manager'
+require 'fileutils'
+require 'tmpdir'
+require 'date'
 
 class StateManagerTest < Minitest::Test
   def setup
