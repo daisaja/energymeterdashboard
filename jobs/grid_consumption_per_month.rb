@@ -16,37 +16,39 @@ $meter_count_feed_year_start   = 0.0
 
 $month_state_initialized = false
 
-SCHEDULER.every '60s', :first_in => 0 do |job|
-  grid_measurements = GridMeasurements.new()
-  supply = grid_measurements.grid_supply_total
-  feed   = grid_measurements.grid_feed_total
+if defined?(SCHEDULER)
+  SCHEDULER.every '60s', :first_in => 0 do |job|
+    grid_measurements = GridMeasurements.new()
+    supply = grid_measurements.grid_supply_total
+    feed   = grid_measurements.grid_feed_total
 
-  unless $month_state_initialized
-    load_month_state(supply, feed)
-    $month_state_initialized = true
-  end
-
-  if is_new_month()
-    $kwh_supply_last_month          = $kwh_supply_current_month
-    $kwh_feed_last_month            = $kwh_feed_current_month
-    $meter_count_supply_month_start = supply
-    $meter_count_feed_month_start   = feed
-    if Time.now.month == 1
-      $meter_count_supply_year_start = supply
-      $meter_count_feed_year_start   = feed
+    unless $month_state_initialized
+      load_month_state(supply, feed)
+      $month_state_initialized = true
     end
-    StateManager.save(day: current_day_state, month: current_month_state, year: current_year_state)
+
+    if is_new_month()
+      $kwh_supply_last_month          = $kwh_supply_current_month
+      $kwh_feed_last_month            = $kwh_feed_current_month
+      $meter_count_supply_month_start = supply
+      $meter_count_feed_month_start   = feed
+      if Time.now.month == 1
+        $meter_count_supply_year_start = supply
+        $meter_count_feed_year_start   = feed
+      end
+      StateManager.save(day: current_day_state, month: current_month_state, year: current_year_state)
+    end
+
+    $kwh_supply_current_month = (supply - $meter_count_supply_month_start).round(1)
+    $kwh_feed_current_month   = (feed   - $meter_count_feed_month_start).round(1)
+    $kwh_supply_current_year  = (supply - $meter_count_supply_year_start).round(1)
+    $kwh_feed_current_year    = (feed   - $meter_count_feed_year_start).round(1)
+
+    send_event('meter_grid_supply_month', { current: $kwh_supply_current_month, last: $kwh_supply_last_month })
+    send_event('meter_grid_feed_month',   { current: $kwh_feed_current_month,   last: $kwh_feed_last_month })
+    send_event('meter_grid_supply_year',  { value: $kwh_supply_current_year })
+    send_event('meter_grid_feed_year',    { value: $kwh_feed_current_year })
   end
-
-  $kwh_supply_current_month = (supply - $meter_count_supply_month_start).round(1)
-  $kwh_feed_current_month   = (feed   - $meter_count_feed_month_start).round(1)
-  $kwh_supply_current_year  = (supply - $meter_count_supply_year_start).round(1)
-  $kwh_feed_current_year    = (feed   - $meter_count_feed_year_start).round(1)
-
-  send_event('meter_grid_supply_month', { current: $kwh_supply_current_month, last: $kwh_supply_last_month })
-  send_event('meter_grid_feed_month',   { current: $kwh_feed_current_month,   last: $kwh_feed_last_month })
-  send_event('meter_grid_supply_year',  { value: $kwh_supply_current_year })
-  send_event('meter_grid_feed_year',    { value: $kwh_feed_current_year })
 end
 
 # Load persisted month/year baselines on startup.
