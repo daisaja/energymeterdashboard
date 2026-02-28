@@ -17,10 +17,10 @@ class PowerwallClient
     login unless @@auth_token
     fetch_metrics
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[Powerwall] Verbindung zu #{@host} fehlgeschlagen: Gerät nicht erreichbar" unless @@last_values.empty?
+    puts "[Powerwall] Verbindung zu #{@host} fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
   rescue => e
-    puts "[Powerwall] Fehler: #{e.message}" unless @@last_values.empty?
+    puts "[Powerwall] Fehler: #{e.message}"
     restore_last_values
   end
 

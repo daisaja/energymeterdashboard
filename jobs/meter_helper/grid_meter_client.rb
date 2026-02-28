@@ -50,7 +50,7 @@ class GridMeasurements
 
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar" unless @@last_values.empty?
+    puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
   end
 

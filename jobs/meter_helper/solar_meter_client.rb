@@ -40,7 +40,7 @@ class SolarMeasurements
     @solar_watts_per_month = 0.0 # not implemented yet
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[SolarMeter] Verbindung zu #{SOLAR_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar" unless @@last_values.empty?
+    puts "[SolarMeter] Verbindung zu #{SOLAR_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
   end
 

@@ -19,10 +19,10 @@ class OpenDTUMeterClient
     @yield_total = response.parsed_response['total']['YieldTotal']['v'].to_f.round(0)
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[OpenDTU] Verbindung zu #{@opendtu_host} fehlgeschlagen: Gerät nicht erreichbar" unless @@last_values.empty?
+    puts "[OpenDTU] Verbindung zu #{@opendtu_host} fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
   rescue => e
-    puts "[OpenDTU] Fehler: #{e.message}" unless @@last_values.empty?
+    puts "[OpenDTU] Fehler: #{e.message}"
     restore_last_values
   end
 
