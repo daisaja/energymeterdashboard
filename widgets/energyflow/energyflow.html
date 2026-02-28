@@ -30,17 +30,19 @@
     <!-- Solar: top center (380, 75) -->
     <g class="ef-node" id="node-solar" transform="translate(380,75)">
       <circle class="node-circle solar" r="40"/>
-      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf185;</text>
-      <text class="node-label" text-anchor="middle" dy="10">Solar</text>
-      <text class="node-value" id="val-solar" text-anchor="middle" dy="26">-- W</text>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-10">&#xf185;</text>
+      <text class="node-label" text-anchor="middle" dy="5">Solar</text>
+      <text class="node-value" id="val-solar" text-anchor="middle" dy="19">-- W</text>
+      <text class="node-kwh" id="val-solar-kwh" text-anchor="middle" dy="31">-- kWh</text>
     </g>
 
     <!-- Grid: left middle (90, 200) -->
     <g class="ef-node" id="node-grid" transform="translate(90,200)">
       <circle class="node-circle grid" r="40"/>
-      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf0e7;</text>
-      <text class="node-label" id="lbl-grid" text-anchor="middle" dy="10">Netz</text>
-      <text class="node-value" id="val-grid" text-anchor="middle" dy="26">-- W</text>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-10">&#xf0e7;</text>
+      <text class="node-label" id="lbl-grid" text-anchor="middle" dy="5">Netz</text>
+      <text class="node-value" id="val-grid" text-anchor="middle" dy="19">-- W</text>
+      <text class="node-kwh" id="val-grid-kwh" text-anchor="middle" dy="31">-- kWh</text>
     </g>
 
     <!-- Haus: center (380, 200) -->
@@ -54,9 +56,16 @@
     <!-- Wärmepumpe: right middle (670, 200) -->
     <g class="ef-node" id="node-heatpump" transform="translate(670,200)">
       <circle class="node-circle heatpump" r="40"/>
-      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf06d;</text>
-      <text class="node-label" text-anchor="middle" dy="10">WP</text>
-      <text class="node-value" id="val-heatpump" text-anchor="middle" dy="26">-- W</text>
+      <!-- Fan icon: 3-blade propeller -->
+      <g transform="translate(0,-14)" fill="rgba(255,255,255,0.9)">
+        <g transform="rotate(0)">  <ellipse cx="2" cy="-5" rx="2.5" ry="6"/></g>
+        <g transform="rotate(120)"><ellipse cx="2" cy="-5" rx="2.5" ry="6"/></g>
+        <g transform="rotate(240)"><ellipse cx="2" cy="-5" rx="2.5" ry="6"/></g>
+        <circle r="2.5"/>
+      </g>
+      <text class="node-label" text-anchor="middle" dy="5">WP</text>
+      <text class="node-value" id="val-heatpump" text-anchor="middle" dy="19">-- W</text>
+      <text class="node-kwh" id="val-heatpump-kwh" text-anchor="middle" dy="31">-- kWh</text>
     </g>
 
     <!-- Akku: bottom center (380, 330) -->

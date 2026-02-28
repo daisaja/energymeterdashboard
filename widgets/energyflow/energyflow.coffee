@@ -18,6 +18,11 @@ class Dashing.Energyflow extends Dashing.Widget
     @setText('val-battery',  "#{Math.abs(data.battery_w)} W")
     @setText('val-soc',      "#{data.battery_soc}%")
 
+    # ─── Update kWh daily totals ─────────────────────────────
+    @setText('val-solar-kwh',    "#{data.solar_kwh} kWh")
+    @setText('val-grid-kwh',     "#{data.grid_kwh} kWh")
+    @setText('val-heatpump-kwh', "#{data.heatpump_kwh} kWh")
+
     # Grid label flips between Bezug and Einspeisung
     @setText('lbl-grid', if data.grid_w < -THRESHOLD then 'Einspeisung' else 'Netz')
 
