@@ -83,6 +83,17 @@ class GridMeterClientTest < Minitest::Test
     assert_equal(0.0, grid_measures.grid_supply_total)
   end
 
+  def test_grid_meter_client_socket_error_returns_defaults
+    GridMeasurements.class_variable_set(:@@last_values, {})
+    stub_request(:get, "http://192.168.178.103:8081/").to_raise(SocketError)
+
+    grid_measures = GridMeasurements.new
+    assert_equal(0.0, grid_measures.grid_feed_current)
+    assert_equal(0.0, grid_measures.grid_feed_total)
+    assert_equal(0.0, grid_measures.grid_supply_current)
+    assert_equal(0.0, grid_measures.grid_supply_total)
+  end
+
   def test_grid_meter_client_keeps_last_values_on_error
     stub_grid(grid_response(feed_total_wh: 12_345_000, supply_total_wh: 8_765_000, current_power_w: -2500))
 
