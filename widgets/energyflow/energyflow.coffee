@@ -14,16 +14,18 @@ class Dashing.Energyflow extends Dashing.Widget
     17: '❄'   # Schneekörner
     6:  '⚡'  # Gewitter
 
+  constructor: ->
+    super
+    # Register for weather_temperature events before the SSE URL is built.
+    # Smashing filters SSE by Dashing.widgets keys (built at layout ready),
+    # which fires AFTER ready: — so we register here in the constructor instead.
+    Dashing.widgets['weather_temperature'] ||= []
+    Dashing.widgets['weather_temperature'].push(@)
+
   ready: ->
     # Initial state: all paths inactive
     paths = @node.querySelectorAll('.flow-path')
     path.classList.remove('active', 'reverse') for path in paths
-
-    # Register this widget to also receive weather_temperature events.
-    # Smashing filters SSE by Dashing.widgets keys — registering here ensures
-    # the server sends weather events to this dashboard too.
-    Dashing.widgets['weather_temperature'] ||= []
-    Dashing.widgets['weather_temperature'].push(@)
 
   onData: (data) ->
     return unless data
