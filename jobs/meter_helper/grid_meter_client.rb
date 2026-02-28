@@ -52,6 +52,9 @@ class GridMeasurements
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
+  rescue => e
+    puts "[GridMeter] Fehler: #{e.message}"
+    restore_last_values
   end
 
   def save_values

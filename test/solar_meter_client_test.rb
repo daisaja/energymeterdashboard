@@ -57,6 +57,15 @@ class SolarMeterClientTest < Minitest::Test
     assert_equal(0.0, solar.solar_watts_per_month)
   end
 
+  def test_solar_meter_client_socket_error_returns_defaults
+    SolarMeasurements.class_variable_set(:@@last_values, {})
+    stub_request(:post, SOLAR_METER_URL).to_raise(SocketError)
+
+    solar = SolarMeasurements.new
+    assert_equal(0.0, solar.solar_watts_current)
+    assert_equal(0.0, solar.solar_watts_per_month)
+  end
+
   def test_solar_meter_client_keeps_last_values_on_error
     stub_solar(solar_response)
 
