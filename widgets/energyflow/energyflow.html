@@ -76,38 +76,25 @@
       <text class="node-value" id="val-battery" text-anchor="middle" dy="22">-- W</text>
     </g>
 
-    <!-- ═══ WEATHER PANEL (top-right) ═══ -->
-    <g id="weather-panel">
-      <!-- Current weather: icon + temperature + wind -->
-      <g id="current-weather" transform="translate(455, 0)">
-        <text id="weather-icon"
-              class="weather-icon"
-              x="14" y="38"
-              text-anchor="middle">--</text>
-        <text id="weather-temp"
-              class="weather-temp"
-              x="34" y="38">--°</text>
-        <text id="weather-wind"
-              class="weather-wind"
-              x="34" y="50">-- km/h</text>
-      </g>
+    <!-- ═══ WEATHER PANEL (top-right, single column) ═══ -->
+    <g id="weather-panel" transform="translate(548, 0)">
+      <!-- Current weather: icon + temp on one line, wind below -->
+      <text id="weather-icon" class="weather-icon" x="12" y="40" text-anchor="middle">--</text>
+      <text id="weather-temp" class="weather-temp" x="28" y="40">--°</text>
+      <text id="weather-wind" class="weather-wind" x="12" y="55">-- km/h</text>
 
       <!-- Separator line -->
-      <line class="weather-separator" x1="455" y1="57" x2="752" y2="57"/>
+      <line class="weather-separator" x1="0" y1="63" x2="204" y2="63"/>
 
-      <!-- Forecast 1: icon + day on same line, temp below -->
-      <g id="fc1-group" transform="translate(475, 0)">
-        <text id="fc1-icon" class="weather-fc-icon" x="0"  y="70">--</text>
-        <text id="fc1-day"  class="weather-fc-day"  x="20" y="70">---</text>
-        <text id="fc1-temp" class="weather-fc-temp" x="20" y="82">--</text>
-      </g>
+      <!-- Forecast 1: icon + day + temp inline -->
+      <text id="fc1-icon" class="weather-fc-icon" x="0"  y="79">--</text>
+      <text id="fc1-day"  class="weather-fc-day"  x="22" y="79">---</text>
+      <text id="fc1-temp" class="weather-fc-temp" x="90" y="79">--</text>
 
-      <!-- Forecast 2: icon + day on same line, temp below -->
-      <g id="fc2-group" transform="translate(618, 0)">
-        <text id="fc2-icon" class="weather-fc-icon" x="0"  y="70">--</text>
-        <text id="fc2-day"  class="weather-fc-day"  x="20" y="70">---</text>
-        <text id="fc2-temp" class="weather-fc-temp" x="20" y="82">--</text>
-      </g>
+      <!-- Forecast 2: icon + day + temp inline -->
+      <text id="fc2-icon" class="weather-fc-icon" x="0"  y="97">--</text>
+      <text id="fc2-day"  class="weather-fc-day"  x="22" y="97">---</text>
+      <text id="fc2-temp" class="weather-fc-temp" x="90" y="97">--</text>
     </g>
 
   </svg>
