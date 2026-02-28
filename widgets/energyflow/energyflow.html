@@ -78,19 +78,19 @@
 
     <!-- ═══ WEATHER PANEL (top-right) ═══ -->
     <g id="weather-panel">
-      <!-- Current weather: icon + temperature -->
-      <text id="weather-icon"
-            class="weather-icon"
-            x="471" y="44"
-            text-anchor="middle">--</text>
-      <text id="weather-temp"
-            class="weather-temp"
-            x="497" y="44">--°</text>
-
-      <!-- Wind speed -->
-      <text id="weather-wind"
-            class="weather-wind"
-            x="497" y="60">-- km/h</text>
+      <!-- Current weather: icon + temperature + wind -->
+      <g id="current-weather" transform="translate(455, 0)">
+        <text id="weather-icon"
+              class="weather-icon"
+              x="16" y="44"
+              text-anchor="middle">--</text>
+        <text id="weather-temp"
+              class="weather-temp"
+              x="42" y="44">--°</text>
+        <text id="weather-wind"
+              class="weather-wind"
+              x="42" y="60">-- km/h</text>
+      </g>
 
       <!-- Separator line -->
       <line class="weather-separator" x1="455" y1="68" x2="752" y2="68"/>
