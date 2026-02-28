@@ -73,4 +73,26 @@ class HeatingMeterClientTest < Minitest::Test
     assert_equal(1.0,  heating2.heating_kwh_current_day)
     assert_equal(1.0,  heating2.heating_kwh_last_day)
   end
+
+  def test_socket_error_falls_back_to_last_values
+    # SocketError (DNS failure) was previously not caught — job would fail entirely
+    HeatingMeasurements.class_variable_set(:@@last_values, {})
+    stub_request(:get, "#{HEATING_BASE_URL}/a?f=j").to_raise(SocketError)
+
+    heating = HeatingMeasurements.new
+    assert_equal(0.0, heating.heating_watts_current)
+  end
+
+  def test_current_watts_preserved_when_secondary_requests_fail
+    # Request 1 (current power) succeeds, requests 2-4 (monthly/daily) fail.
+    # heating_watts_current must still reflect the freshly-read value so the
+    # energyflow job can send an event with the correct heatpump wattage.
+    HeatingMeasurements.class_variable_set(:@@last_values, { heating_watts_current: 0 })
+    stub_request(:get, "#{HEATING_BASE_URL}/a?f=j")
+      .to_return(status: 200, body: { 'pwr' => 1500 }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V}).to_raise(SocketError)
+
+    heating = HeatingMeasurements.new
+    assert_equal(1500, heating.heating_watts_current)
+  end
 end
