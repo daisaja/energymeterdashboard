@@ -41,7 +41,7 @@ class HeatingMeasurements
     @heating_kwh_last_day = calculate_sum_of_watts(response)
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
+    puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar" unless @@last_values.empty?
     restore_last_values
   end
 
