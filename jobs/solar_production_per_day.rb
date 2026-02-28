@@ -13,6 +13,7 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
       watts_per_time_unit = response.parsed_response['result']['017A-xxxxx26F']['7000']['1']
   end
   kwh_current_day = kwh_current_day(watts_per_time_unit)
+  $solar_kwh_current_day = kwh_current_day
 
   # two values from json
   begin  # "try" block

@@ -19,6 +19,9 @@ if defined?(SCHEDULER)
       )
 
       payload = build_energyflow_payload(grid, combined_solar, powerwall, heating)
+      payload[:solar_kwh]    = defined?($solar_kwh_current_day)    ? $solar_kwh_current_day.to_f    : 0.0
+      payload[:grid_kwh]     = defined?($kwh_supply_current_day)   ? $kwh_supply_current_day.to_f   : 0.0
+      payload[:heatpump_kwh] = defined?($heatpump_kwh_current_day) ? $heatpump_kwh_current_day.to_f : 0.0
       send_event('energyflow', payload)
     rescue => e
       puts "[EnergyFlow] Error: #{e.message}"

@@ -1,58 +1,11 @@
-<script>Dashing.numColumns = 6;</script>
-
 <div class="gridster">
   <ul>
 
-    <!-- ═══ 4×2 Energy Flow Widget ═══ -->
     <li data-row="1" data-col="1" data-sizex="4" data-sizey="2">
       <div data-id="energyflow"
            data-view="Energyflow"
            data-title=""
            style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
-      </div>
-    </li>
-
-    <!-- ═══ Detail Kacheln (rechts, 1×1 je) ═══ -->
-
-    <!-- Solar Tagesproduktion — Event von solar_production_per_day.rb -->
-    <li data-row="1" data-col="5" data-sizex="1" data-sizey="1">
-      <div data-id="wattmetersolar_sum"
-           data-view="Number"
-           data-title="Solar heute"
-           data-moreinfo="kWh"
-           style="background-color:#c8860a;">
-      </div>
-    </li>
-
-    <!-- Powerwall SOC — Event von powerwall.rb -->
-    <li data-row="1" data-col="6" data-sizex="1" data-sizey="1">
-      <div data-id="powerwall_soc"
-           data-view="Meter"
-           data-title="Akku"
-           data-moreinfo="Ladestand in %"
-           data-min="0"
-           data-max="100"
-           style="background-color:#2e7d32;">
-      </div>
-    </li>
-
-    <!-- Netzbezug heute — Event von grid_consumption_per_day.rb -->
-    <li data-row="2" data-col="5" data-sizex="1" data-sizey="1">
-      <div data-id="meter_grid_supply_sum"
-           data-view="Number"
-           data-title="Netzbezug"
-           data-moreinfo="kWh heute"
-           style="background-color:#2a6db5;">
-      </div>
-    </li>
-
-    <!-- Wärmepumpe heute — Event von heating_consumption_per_day.rb -->
-    <li data-row="2" data-col="6" data-sizex="1" data-sizey="1">
-      <div data-id="wattmeterheating_sum"
-           data-view="Number"
-           data-title="Wärmepumpe"
-           data-moreinfo="kWh heute"
-           style="background-color:#a0522d;">
       </div>
     </li>
 
