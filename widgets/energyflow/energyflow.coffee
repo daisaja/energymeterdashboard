@@ -19,14 +19,19 @@ class Dashing.Energyflow extends Dashing.Widget
     paths = @node.querySelectorAll('.flow-path')
     path.classList.remove('active', 'reverse') for path in paths
 
-    # Subscribe to weather event (independent of energyflow event)
-    self = @
-    Dashing.on 'weather_temperature', (event, data) ->
-      return unless data
-      self.updateWeather(data)
+    # Register this widget to also receive weather_temperature events.
+    # Smashing filters SSE by Dashing.widgets keys — registering here ensures
+    # the server sends weather events to this dashboard too.
+    Dashing.widgets['weather_temperature'] ||= []
+    Dashing.widgets['weather_temperature'].push(@)
 
   onData: (data) ->
     return unless data
+
+    # Route weather events — they share onData since we registered for both
+    if data.id == 'weather_temperature'
+      @updateWeather(data)
+      return
 
     # ─── Update node watt displays ───────────────────────────
     @setText('val-solar',    "#{data.solar_w} W")
