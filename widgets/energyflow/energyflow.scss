@@ -88,4 +88,45 @@
     font-size: 10px;
     opacity: 0.5;
   }
+
+  // ─── Weather panel (top-right) ────────────────────────────
+  .weather-icon {
+    fill: rgba(255, 255, 255, 0.95);
+    font-size: 22px;
+  }
+
+  .weather-temp {
+    fill: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .weather-wind {
+    fill: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    font-weight: 300;
+  }
+
+  .weather-separator {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1;
+  }
+
+  .weather-fc-day {
+    fill: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .weather-fc-icon {
+    fill: rgba(255, 255, 255, 0.9);
+    font-size: 17px;
+  }
+
+  .weather-fc-temp {
+    fill: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+  }
 }
