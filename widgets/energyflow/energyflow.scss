@@ -92,18 +92,18 @@
   // ─── Weather panel (top-right) ────────────────────────────
   .weather-icon {
     fill: rgba(255, 255, 255, 0.95);
-    font-size: 22px;
+    font-size: 16px;
   }
 
   .weather-temp {
     fill: #ffffff;
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 600;
   }
 
   .weather-wind {
     fill: rgba(255, 255, 255, 0.55);
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 300;
   }
 
@@ -114,7 +114,7 @@
 
   .weather-fc-day {
     fill: rgba(255, 255, 255, 0.55);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -122,11 +122,11 @@
 
   .weather-fc-icon {
     fill: rgba(255, 255, 255, 0.9);
-    font-size: 17px;
+    font-size: 13px;
   }
 
   .weather-fc-temp {
     fill: rgba(255, 255, 255, 0.75);
-    font-size: 11px;
+    font-size: 10px;
   }
 }
