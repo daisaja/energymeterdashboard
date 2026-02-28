@@ -76,6 +76,27 @@
       <text class="node-value" id="val-battery" text-anchor="middle" dy="22">-- W</text>
     </g>
 
+    <!-- ═══ WEATHER PANEL (top-right, single column) ═══ -->
+    <g id="weather-panel" transform="translate(548, -38)">
+      <!-- Current weather: large icon spanning both rows, temp + wind stacked to the right -->
+      <text id="weather-icon" class="weather-icon" x="22" y="60" text-anchor="middle" font-family="Climacons-Font">--</text>
+      <text id="weather-temp" class="weather-temp" x="58" y="42">--°</text>
+      <text id="weather-wind" class="weather-wind" x="58" y="60">-- km/h</text>
+
+      <!-- Separator line -->
+      <line class="weather-separator" x1="0" y1="69" x2="204" y2="69"/>
+
+      <!-- Forecast 1: icon + day + temp inline -->
+      <text id="fc1-icon" class="weather-fc-icon" x="0"  y="87" font-family="Climacons-Font">--</text>
+      <text id="fc1-day"  class="weather-fc-day"  x="26" y="87">---</text>
+      <text id="fc1-temp" class="weather-fc-temp" x="100" y="87">--</text>
+
+      <!-- Forecast 2: icon + day + temp inline -->
+      <text id="fc2-icon" class="weather-fc-icon" x="0"  y="108" font-family="Climacons-Font">--</text>
+      <text id="fc2-day"  class="weather-fc-day"  x="26" y="108">---</text>
+      <text id="fc2-temp" class="weather-fc-temp" x="100" y="108">--</text>
+    </g>
+
   </svg>
 </div>
 

@@ -2,6 +2,27 @@ class Dashing.Energyflow extends Dashing.Widget
 
   THRESHOLD = 50    # Watts below which a flow is considered inactive
 
+  # Unicode chars from Climacons-Font (matches climacons-font.css index mapping)
+  CLIMACON_TO_CHAR =
+    32: '\ue028'  # Sonne
+    26: '\ue000'  # Wolke + Sonne
+    20: '\ue01b'  # Nebel
+    12: '\ue006'  # Regen
+    11: '\ue006'  # Regenschauer
+    9:  '\ue00c'  # Nieselregen
+    18: '\ue00f'  # Schneeregen
+    16: '\ue018'  # Schnee
+    17: '\ue012'  # Schneekörner
+    6:  '\ue015'  # Gewitter
+
+  constructor: ->
+    super
+    # Register for weather_temperature events before the SSE URL is built.
+    # Smashing filters SSE by Dashing.widgets keys (built at layout ready),
+    # which fires AFTER ready: — so we register here in the constructor instead.
+    Dashing.widgets['weather_temperature'] ||= []
+    Dashing.widgets['weather_temperature'].push(@)
+
   ready: ->
     # Initial state: all paths inactive
     paths = @node.querySelectorAll('.flow-path')
@@ -9,6 +30,11 @@ class Dashing.Energyflow extends Dashing.Widget
 
   onData: (data) ->
     return unless data
+
+    # Route weather events — they share onData since we registered for both
+    if data.id == 'weather_temperature'
+      @updateWeather(data)
+      return
 
     # ─── Update node watt displays ───────────────────────────
     @setText('val-solar',    "#{data.solar_w} W")
@@ -72,3 +98,14 @@ class Dashing.Energyflow extends Dashing.Widget
   setText: (id, text) ->
     el = @node.querySelector("##{id}")
     el.textContent = text if el
+
+  updateWeather: (data) ->
+    @setText('weather-icon', CLIMACON_TO_CHAR[data.climacon_code] or '?')
+    @setText('weather-temp', "#{data.current}°")
+    @setText('weather-wind', "≈ #{data.wind_speed} km/h")
+    @setText('fc1-day',  data.forecast1_day)
+    @setText('fc1-icon', CLIMACON_TO_CHAR[data.forecast1_climacon] or '?')
+    @setText('fc1-temp', data.forecast1)
+    @setText('fc2-day',  data.forecast2_day)
+    @setText('fc2-icon', CLIMACON_TO_CHAR[data.forecast2_climacon] or '?')
+    @setText('fc2-temp', data.forecast2)
