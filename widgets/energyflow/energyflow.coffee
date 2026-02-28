@@ -2,17 +2,18 @@ class Dashing.Energyflow extends Dashing.Widget
 
   THRESHOLD = 50    # Watts below which a flow is considered inactive
 
-  CLIMACON_TO_EMOJI =
-    32: '☀'   # Sonne
-    26: '⛅'  # Wolke + Sonne
-    20: '🌫'  # Nebel
-    12: '🌧'  # Regen
-    11: '🌧'  # Regenschauer
-    9:  '🌦'  # Nieselregen
-    18: '🌨'  # Schneeregen
-    16: '❄'   # Schnee
-    17: '❄'   # Schneekörner
-    6:  '⚡'  # Gewitter
+  # Unicode chars from Climacons-Font (matches climacons-font.css index mapping)
+  CLIMACON_TO_CHAR =
+    32: '\ue028'  # Sonne
+    26: '\ue000'  # Wolke + Sonne
+    20: '\ue01b'  # Nebel
+    12: '\ue006'  # Regen
+    11: '\ue006'  # Regenschauer
+    9:  '\ue00c'  # Nieselregen
+    18: '\ue00f'  # Schneeregen
+    16: '\ue018'  # Schnee
+    17: '\ue012'  # Schneekörner
+    6:  '\ue015'  # Gewitter
 
   constructor: ->
     super
@@ -99,12 +100,12 @@ class Dashing.Energyflow extends Dashing.Widget
     el.textContent = text if el
 
   updateWeather: (data) ->
-    @setText('weather-icon', CLIMACON_TO_EMOJI[data.climacon_code] or '?')
+    @setText('weather-icon', CLIMACON_TO_CHAR[data.climacon_code] or '?')
     @setText('weather-temp', "#{data.current}°")
     @setText('weather-wind', "≈ #{data.wind_speed} km/h")
     @setText('fc1-day',  data.forecast1_day)
-    @setText('fc1-icon', CLIMACON_TO_EMOJI[data.forecast1_climacon] or '?')
+    @setText('fc1-icon', CLIMACON_TO_CHAR[data.forecast1_climacon] or '?')
     @setText('fc1-temp', data.forecast1)
     @setText('fc2-day',  data.forecast2_day)
-    @setText('fc2-icon', CLIMACON_TO_EMOJI[data.forecast2_climacon] or '?')
+    @setText('fc2-icon', CLIMACON_TO_CHAR[data.forecast2_climacon] or '?')
     @setText('fc2-temp', data.forecast2)
