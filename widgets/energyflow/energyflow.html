@@ -1,0 +1,73 @@
+<div class="energyflow-container">
+  <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" class="energyflow-svg">
+
+    <!-- ═══ FLOW PATHS (drawn behind nodes) ═══ -->
+
+    <!-- Solar → Haus (top to center, downward) -->
+    <path data-flow="solar-house"
+          class="flow-path"
+          d="M 380,115 L 380,162"/>
+
+    <!-- Grid ↔ Haus (left to center, horizontal) -->
+    <!-- Same path used for Bezug (forward) and Einspeisung (reverse) -->
+    <path data-flow="grid-house"
+          class="flow-path"
+          d="M 140,200 L 332,200"/>
+
+    <!-- Haus → WP (center to right, horizontal) -->
+    <path data-flow="house-heatpump"
+          class="flow-path"
+          d="M 428,200 L 620,200"/>
+
+    <!-- Haus ↔ Akku (center to bottom, downward) -->
+    <!-- Same path: forward = charging, reverse = discharging -->
+    <path data-flow="house-battery"
+          class="flow-path"
+          d="M 380,238 L 380,292"/>
+
+    <!-- ═══ NODES ═══ -->
+
+    <!-- Solar: top center (380, 75) -->
+    <g class="ef-node" id="node-solar" transform="translate(380,75)">
+      <circle class="node-circle solar" r="40"/>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf185;</text>
+      <text class="node-label" text-anchor="middle" dy="10">Solar</text>
+      <text class="node-value" id="val-solar" text-anchor="middle" dy="26">-- W</text>
+    </g>
+
+    <!-- Grid: left middle (90, 200) -->
+    <g class="ef-node" id="node-grid" transform="translate(90,200)">
+      <circle class="node-circle grid" r="40"/>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf0e7;</text>
+      <text class="node-label" id="lbl-grid" text-anchor="middle" dy="10">Netz</text>
+      <text class="node-value" id="val-grid" text-anchor="middle" dy="26">-- W</text>
+    </g>
+
+    <!-- Haus: center (380, 200) -->
+    <g class="ef-node" id="node-house" transform="translate(380,200)">
+      <circle class="node-circle house" r="46"/>
+      <text class="node-icon" font-family="FontAwesome" font-size="26" text-anchor="middle" dy="-6">&#xf015;</text>
+      <text class="node-label" text-anchor="middle" dy="12">Haus</text>
+      <text class="node-value" id="val-house" text-anchor="middle" dy="28">-- W</text>
+    </g>
+
+    <!-- Wärmepumpe: right middle (670, 200) -->
+    <g class="ef-node" id="node-heatpump" transform="translate(670,200)">
+      <circle class="node-circle heatpump" r="40"/>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-5">&#xf06d;</text>
+      <text class="node-label" text-anchor="middle" dy="10">WP</text>
+      <text class="node-value" id="val-heatpump" text-anchor="middle" dy="26">-- W</text>
+    </g>
+
+    <!-- Akku: bottom center (380, 330) -->
+    <g class="ef-node" id="node-battery" transform="translate(380,330)">
+      <circle class="node-circle battery" r="40"/>
+      <text class="node-icon" font-family="FontAwesome" font-size="22" text-anchor="middle" dy="-8">&#xf240;</text>
+      <text class="node-soc" id="val-soc" text-anchor="middle" dy="6">--%</text>
+      <text class="node-value" id="val-battery" text-anchor="middle" dy="22">-- W</text>
+    </g>
+
+  </svg>
+</div>
+
+<p class="updated-at" data-bind="updatedAtMessage"></p>
