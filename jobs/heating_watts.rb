@@ -1,7 +1,8 @@
 require_relative 'meter_helper/heating_meter_client'
 
-SCHEDULER.every '2s', :first_in => 0 do |job|
+SCHEDULER.every '2s', :first_in => 0, :overlap => false do |job|
   heating_measurements = HeatingMeasurements.new()
+  $heating_watts_current = heating_measurements.heating_watts_current
   send_event('wattmeterheating',   { value: heating_measurements.heating_watts_current})
   report_heating(heating_measurements.heating_watts_current)
 end

@@ -1,31 +1,32 @@
-require_relative 'meter_helper/grid_meter_client'
-require_relative 'meter_helper/solar_meter_client'
-require_relative 'meter_helper/opendtu_meter_client'
-require_relative 'meter_helper/powerwall_client'
-require_relative 'meter_helper/heating_meter_client'
+require 'ostruct'
 
 if defined?(SCHEDULER)
-  SCHEDULER.every '3s', :first_in => 0 do |job|
-    begin
-      grid      = GridMeasurements.new
-      solar     = SolarMeasurements.new
-      opendtu   = OpenDTUMeterClient.new
-      powerwall = PowerwallClient.new
-      heating   = HeatingMeasurements.new
+  # Reads live values from globals set by individual jobs (grid_watts, solar_watts,
+  # heating_watts, powerwall) — no own HTTP calls to avoid duplicate connections
+  # and race conditions on shared class state (@@last_values, @@auth_token).
+  SCHEDULER.every '3s', :first_in => 0, :overlap => false do |job|
+    grid      = OpenStruct.new(
+      grid_supply_current: defined?($grid_supply_kw)          ? $grid_supply_kw.to_f          : 0.0,
+      grid_feed_current:   defined?($grid_feed_kw)            ? $grid_feed_kw.to_f            : 0.0
+    )
+    solar     = OpenStruct.new(
+      solar_watts_current: defined?($solar_watts_combined)    ? $solar_watts_combined.to_f    : 0.0
+    )
+    powerwall = OpenStruct.new(
+      power_watts:         defined?($powerwall_battery_power) ? $powerwall_battery_power.to_f : 0.0,
+      soc_percent:         defined?($powerwall_soc_percent)   ? $powerwall_soc_percent.to_f   : 0.0
+    )
+    heating   = OpenStruct.new(
+      heating_watts_current: defined?($heating_watts_current) ? $heating_watts_current.to_f   : 0.0
+    )
 
-      # Combine SMA inverter + OpenDTU (same pattern as solar_watts.rb)
-      combined_solar = OpenStruct.new(
-        solar_watts_current: solar.solar_watts_current + opendtu.power_watts
-      )
-
-      payload = build_energyflow_payload(grid, combined_solar, powerwall, heating)
-      payload[:solar_kwh]    = defined?($solar_kwh_current_day)    ? $solar_kwh_current_day.to_f    : 0.0
-      payload[:grid_kwh]     = defined?($kwh_supply_current_day)   ? $kwh_supply_current_day.to_f   : 0.0
-      payload[:heatpump_kwh] = defined?($heatpump_kwh_current_day) ? $heatpump_kwh_current_day.to_f : 0.0
-      send_event('energyflow', payload)
-    rescue => e
-      puts "[EnergyFlow] Error: #{e.message}"
-    end
+    payload = build_energyflow_payload(grid, solar, powerwall, heating)
+    payload[:solar_kwh]    = defined?($solar_kwh_current_day)    ? $solar_kwh_current_day.to_f    : 0.0
+    payload[:grid_kwh]     = defined?($kwh_supply_current_day)   ? $kwh_supply_current_day.to_f   : 0.0
+    payload[:heatpump_kwh] = defined?($heatpump_kwh_current_day) ? $heatpump_kwh_current_day.to_f : 0.0
+    send_event('energyflow', payload)
+  rescue => e
+    puts "[EnergyFlow] Error: #{e.message}"
   end
 end
 
