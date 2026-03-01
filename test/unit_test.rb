@@ -372,7 +372,7 @@ class UnitTest < Minitest::Test
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_return(status: 200, body: heating_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     
-    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?f=j&m=\d+})
       .to_return(status: 200, body: month_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     
     stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
@@ -393,7 +393,7 @@ class UnitTest < Minitest::Test
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_raise(Errno::ECONNREFUSED)
 
-    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?f=j&m=\d+})
       .to_raise(Errno::ECONNREFUSED)
 
     stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
@@ -428,7 +428,7 @@ class UnitTest < Minitest::Test
 
     stub_request(:get, "http://192.168.178.50/a?f=j")
       .to_return(status: 200, body: heating_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
-    stub_request(:get, %r{http://192\.168\.178\.50/V\?\?f=j&m=\d+})
+    stub_request(:get, %r{http://192\.168\.178\.50/V\?f=j&m=\d+})
       .to_return(status: 200, body: month_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     stub_request(:get, "http://192.168.178.50/V?d=0&f=j")
       .to_return(status: 200, body: day_response.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
