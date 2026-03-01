@@ -8,7 +8,7 @@ class SolarMeterClientTest < Minitest::Test
     WebMock.disable_net_connect!
   end
 
-  def solar_response(power: 3500, serial: '017A-B339126F')
+  def solar_response(power: 3500, serial: '017A-xxxxx26F')
     { 'result' => { serial => { '6100_40263F00' => { '1' => [{ 'val' => power }] } } } }
   end
 
@@ -25,11 +25,11 @@ class SolarMeterClientTest < Minitest::Test
     assert_equal(0.0,  solar.solar_watts_per_month)
   end
 
-  def test_solar_meter_client_fallback_serial
-    stub_solar(solar_response(power: 2500, serial: '017A-xxxxx26F'))
+  def test_solar_meter_client_unknown_device_key
+    stub_solar(solar_response(power: 2500, serial: '017A-UNKNOWN0'))
 
     solar = SolarMeasurements.new
-    assert_equal(2500, solar.solar_watts_current)
+    assert_equal(-1, solar.solar_watts_current)
   end
 
   def test_solar_meter_client_nil_value
