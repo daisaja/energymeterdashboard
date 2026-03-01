@@ -1,5 +1,7 @@
 # EnergyFlow Branch Merge Implementation Plan
 
+> **Status: ABGESCHLOSSEN** – PR #50 gemergt, Branch `feature/energyflow` gelöscht (2026-03-01)
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Merge `feature/energyflow` into `master` without breaking Powerwall-Integration und Connection-Fixes, dann lokal verifizieren und Branch löschen.
