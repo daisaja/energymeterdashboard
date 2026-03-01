@@ -64,3 +64,13 @@ stub_request(:get, "http://192.168.1.100:80/api/livedata/status")
 - Use HTTParty for HTTP requests
 - Wrap external API calls in begin/rescue with fallback values (see `jobs/weather.rb` pattern)
 - Use `@@last_values` class variable pattern for caching last successful API response
+
+## Git Workflow
+
+Before starting any new feature or bugfix:
+1. `git checkout master && git pull`
+2. `git checkout -b feature/<name>` (always work on a feature branch, never directly on master)
+
+After creating and merging a PR, always:
+1. `git checkout master && git pull`
+2. `git branch -d <feature-branch>` (delete the local feature branch)

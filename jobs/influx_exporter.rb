@@ -26,7 +26,7 @@ class InfluxExporter
 
   def send_data(hash)
       write_api = @influx_client.create_write_api
-      hash.merge({time: Time.now})
+      hash.merge!({time: Time.now})
       #puts "!!! Influx data: #{hash}\n bucket: #{INFLUXDB_BUCKET}\n org: #{INFLUXDB_REMOTE_ORG}"
       write_api.write(data: hash, bucket: INFLUXDB_BUCKET, org: INFLUXDB_ORG)
   end
