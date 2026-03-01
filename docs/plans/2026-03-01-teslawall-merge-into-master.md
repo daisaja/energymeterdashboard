@@ -1,5 +1,7 @@
 # Teslawall Branch Merge Implementation Plan
 
+> **Status: ABGESCHLOSSEN** – PR #49 gemergt, Branch `feature/teslawall` gelöscht (2026-03-01)
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Merge `feature/teslawall` into `master` without breaking the connection-error fixes and solar meter key fix already on master, then verify locally before deleting the branch.
