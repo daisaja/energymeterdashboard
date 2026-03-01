@@ -7,6 +7,7 @@ SCHEDULER.every '1m', :first_in => 0 do |job|
   heating_measurements = HeatingMeasurements.new()
   # Verbrauch aktueller Tag
   kwh_current_day = heating_measurements.heating_kwh_current_day
+  $heatpump_kwh_current_day = kwh_current_day
   # Verbrauch gestriger Tag
   kwh_last_day = heating_measurements.heating_kwh_last_day
   send_event('wattmeterheating_sum',   { current: kwh_current_day, last: kwh_last_day })

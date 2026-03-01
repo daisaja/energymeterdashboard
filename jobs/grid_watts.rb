@@ -1,15 +1,17 @@
 require_relative 'meter_helper/grid_meter_client'
-require_relative 'meter_helper/solar_meter_client'
 
 if defined?(SCHEDULER)
-  SCHEDULER.every '2s', :first_in => 0 do |job|
+  SCHEDULER.every '2s', :first_in => 0, :overlap => false do |job|
     grid_measurements = GridMeasurements.new()
-    solar_measurements = SolarMeasurements.new()
 
     grid_supply_current = (grid_measurements.grid_supply_current * 1000).round(0)
     grid_feed_current = (grid_measurements.grid_feed_current * 1000).round(0)
 
-    solar_watts_current = solar_measurements.solar_watts_current
+    $grid_supply_kw = grid_measurements.grid_supply_current
+    $grid_feed_kw   = grid_measurements.grid_feed_current
+
+    # Read combined solar (SMA + OpenDTU) from global set by solar_watts.rb
+    solar_watts_current = defined?($solar_watts_combined) ? $solar_watts_combined.to_f : 0.0
     battery_power = defined?($powerwall_battery_power) ? $powerwall_battery_power.to_f : 0.0
     house_consumption = current_consumption(solar_watts_current, grid_supply_current, grid_feed_current, battery_power)
 

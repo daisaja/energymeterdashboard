@@ -2,7 +2,7 @@ require_relative 'meter_helper/grid_meter_client'
 require_relative 'meter_helper/solar_meter_client'
 require_relative 'meter_helper/heating_meter_client'
 
-SCHEDULER.every '3s' do
+SCHEDULER.every '3s', :overlap => false do
   grid_measurements = GridMeasurements.new()
   solar_measurements = SolarMeasurements.new()
   heating_measurements = HeatingMeasurements.new()

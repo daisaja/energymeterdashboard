@@ -32,7 +32,7 @@ class HeatingMeasurements
       response = HTTParty.get(YOULESS_MONTHS_URL % {month: Date.today.month})
       @heating_per_month = 0.0
       response['val'].each do |value|
-          @heating_per_month += value.to_f
+        @heating_per_month += value.to_f
       end
 
       response = HTTParty.get(YOULESS_CURRENT_DAY_KWH)
@@ -40,16 +40,13 @@ class HeatingMeasurements
 
       response = HTTParty.get(YOULESS_LAST_DAY_KWH)
       @heating_kwh_last_day = calculate_sum_of_watts(response)
-    rescue => e
-      puts "[HeatingMeter] Sekundäre Anfrage fehlgeschlagen: #{e.message}"
+    rescue StandardError => e
+      puts "[HeatingMeter] Sekundärdaten nicht verfügbar: #{e.message}"
     end
 
     save_values
-  rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
-    puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
-    restore_last_values
-  rescue => e
-    puts "[HeatingMeter] Fehler: #{e.message}"
+  rescue StandardError => e
+    puts "[HeatingMeter] Verbindung zu #{HEATING_METER_HOST} fehlgeschlagen: #{e.message}"
     restore_last_values
   end
 

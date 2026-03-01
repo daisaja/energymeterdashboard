@@ -141,6 +141,7 @@ if defined?(SCHEDULER)
       current: weather.temperature,
       icon: weather.weather_icon,
       climacon_code: weather.climacon_code,
+      wind_speed: weather.wind_speed,
       moreinfo: "#{weather.weather_description}, Wind: #{weather.wind_speed} km/h",
       forecast1: weather.forecast1,
       forecast1_climacon: weather.forecast1_climacon,

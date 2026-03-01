@@ -6,6 +6,7 @@ SCHEDULER.every '5s', :first_in => 0, :overlap => false do |job|
   client = PowerwallClient.new
 
   $powerwall_battery_power = client.power_watts
+  $powerwall_soc_percent   = client.soc_percent
 
   send_event('powerwall_soc',    { value: client.soc_percent })
   send_event('powerwall_power',  { current: client.power_watts })
