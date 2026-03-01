@@ -24,14 +24,10 @@ class SolarMeasurements
     response = HTTParty.post(SMA_VALUES_URL, verify: false) #without ssl check
 
     begin
-      @solar_watts_current = response.parsed_response['result']['017A-B339126F']['6100_40263F00']['1'][0]['val']
-    rescue
-      begin
-        @solar_watts_current = response.parsed_response['result']['017A-xxxxx26F']['6100_40263F00']['1'][0]['val']
-      rescue
-        puts '[SolarMeter] Konnte Wert nicht aus Antwort lesen'
-        @solar_watts_current = -1
-      end
+      @solar_watts_current = response.parsed_response['result']['017A-xxxxx26F']['6100_40263F00']['1'][0]['val']
+    rescue StandardError
+      puts '[SolarMeter] Konnte Wert nicht aus Antwort lesen'
+      @solar_watts_current = -1
     end
 
     if @solar_watts_current.nil? || @solar_watts_current == 0
@@ -41,6 +37,9 @@ class SolarMeasurements
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[SolarMeter] Verbindung zu #{SOLAR_METER_HOST} fehlgeschlagen: Gerät nicht erreichbar"
+    restore_last_values
+  rescue => e
+    puts "[SolarMeter] Fehler: #{e.message}"
     restore_last_values
   end
 

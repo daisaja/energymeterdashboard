@@ -11,7 +11,7 @@ class HeatingMeterClientTest < Minitest::Test
   def stub_heating_success
     stub_request(:get, "#{HEATING_BASE_URL}/a?f=j")
       .to_return(status: 200, body: { 'pwr' => 1500 }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
-    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V\?\?f=j&m=\d+})
+    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V\?f=j&m=\d+})
       .to_return(status: 200, body: { 'val' => [10, 15, 20, 25] }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     stub_request(:get, "#{HEATING_BASE_URL}/V?d=0&f=j")
       .to_return(status: 200, body: { 'val' => [100, 200, 300, 400] }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
@@ -21,7 +21,7 @@ class HeatingMeterClientTest < Minitest::Test
 
   def stub_heating_error(error)
     stub_request(:get, "#{HEATING_BASE_URL}/a?f=j").to_raise(error)
-    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V\?\?f=j&m=\d+}).to_raise(error)
+    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V\?f=j&m=\d+}).to_raise(error)
     stub_request(:get, "#{HEATING_BASE_URL}/V?d=0&f=j").to_raise(error)
     stub_request(:get, "#{HEATING_BASE_URL}/V?d=1&f=j").to_raise(error)
   end

@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
 require_relative 'grid_meter_client_test'
+require_relative 'solar_meter_client_test'
+require_relative 'heating_meter_client_test'
 require_relative 'opendtu_meter_client_test'
 require_relative 'weather_test'
-require_relative 'heating_meter_client_test'
-require_relative 'solar_meter_client_test'
 require_relative 'influx_exporter_test'
 require_relative 'grid_watts_test'
 require_relative 'state_manager_test'
