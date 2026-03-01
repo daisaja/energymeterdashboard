@@ -42,6 +42,9 @@ class HeatingMeasurements
       @heating_kwh_last_day = calculate_sum_of_watts(response)
     rescue StandardError => e
       puts "[HeatingMeter] Sekundärdaten nicht verfügbar: #{e.message}"
+      @heating_per_month = @@last_values[:heating_per_month] || 0.0
+      @heating_kwh_current_day = @@last_values[:heating_kwh_current_day] || 0.0
+      @heating_kwh_last_day = @@last_values[:heating_kwh_last_day] || 0.0
     end
 
     save_values
