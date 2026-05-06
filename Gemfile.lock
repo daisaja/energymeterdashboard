@@ -16,7 +16,7 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    base64 (0.2.0)
+    base64 (0.3.0)
     benchmark (0.4.0)
     bigdecimal (4.0.1)
     coffee-script (2.4.1)
@@ -47,13 +47,14 @@ GEM
     ffi (1.17.3-x86_64-darwin)
     ffi (1.17.3-x86_64-linux-gnu)
     ffi (1.17.3-x86_64-linux-musl)
-    fiber-storage (1.0.0)
+    fiber-storage (1.0.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    graphql (2.4.4)
+    graphql (2.4.18)
       base64
       fiber-storage
+      logger
     graphql-client (0.24.0)
       activesupport (>= 3.0)
       graphql (>= 1.13.0)
