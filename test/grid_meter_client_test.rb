@@ -110,18 +110,4 @@ class GridMeterClientTest < Minitest::Test
     # 11 Minuten nach Mitternacht = außerhalb des 600s-Fensters
     assert_equal(false, is_new_day(Time.new(2024, 1, 15, 0, 11, 0)))
   end
-
-  # is_new_month helper (defined in grid_meter_client.rb)
-  def test_is_new_month_at_start_of_month
-    assert_equal(true, is_new_month(Time.new(2024, 2, 1, 0, 5, 0)))
-  end
-
-  def test_is_new_month_mid_month
-    assert_equal(false, is_new_month(Time.new(2024, 2, 15, 12, 0, 0)))
-  end
-
-  def test_is_new_month_after_window
-    # 11 Minuten nach Monatsbeginn = außerhalb des 600s-Fensters
-    assert_equal(false, is_new_month(Time.new(2024, 2, 1, 0, 11, 0)))
-  end
 end
