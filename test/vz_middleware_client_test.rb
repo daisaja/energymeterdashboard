@@ -72,7 +72,7 @@ class VzMiddlewareClientTest < Minitest::Test
 
   def test_fetch_returns_db_error_for_sqlstate_exception_body
     stub_request(:get, URL_PATTERN)
-      .to_return(status: 200, body: DB_EXCEPTION_BODY, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 400, body: DB_EXCEPTION_BODY, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     assert_equal(:db_error, VzMiddlewareClient.fetch)
   end
 
@@ -88,6 +88,22 @@ class VzMiddlewareClientTest < Minitest::Test
 
   def test_fetch_returns_error_on_connection_error
     stub_request(:get, URL_PATTERN).to_raise(Errno::ECONNREFUSED)
+    assert_equal(:error, VzMiddlewareClient.fetch)
+  end
+
+  def test_fetch_returns_error_on_http_500_without_body
+    stub_request(:get, URL_PATTERN).to_return(status: 500, body: '')
+    assert_equal(:error, VzMiddlewareClient.fetch)
+  end
+
+  def test_fetch_returns_error_for_non_json_body
+    stub_request(:get, URL_PATTERN)
+      .to_return(status: 400, body: 'Bad Request', headers: { 'Content-Type' => 'text/html' })
+    assert_equal(:error, VzMiddlewareClient.fetch)
+  end
+
+  def test_fetch_returns_error_for_other_exception_body_with_400
+    stub_middleware({ 'exception' => { 'message' => 'Unknown UUID' } }, status: 400)
     assert_equal(:error, VzMiddlewareClient.fetch)
   end
 
