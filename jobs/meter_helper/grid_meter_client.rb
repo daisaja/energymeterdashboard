@@ -95,7 +95,10 @@ def is_new_day(now = Time.now)
   now > midnight && now < midnight + 600
 end
 
-def is_new_month(now = Time.now)
-  first_of_month = Time.new(now.year, now.month, 1)
-  now > first_of_month && now < first_of_month + 600
+# Ein Perioden-Wechsel (Tag/Monat) darf genau einmal ausgelöst werden: wenn sich der
+# Perioden-Key (z.B. '%Y-%m') geändert hat UND alle Zählerstände gültig (> 0) sind.
+# Ungültige Werte (z.B. 0 bei fehlender UUID) werden nie als Baseline akzeptiert;
+# der Key wird dann nicht weitergeschaltet, der nächste Durchlauf versucht es erneut.
+def rollover_due?(tracked_key, current_key, *readings)
+  tracked_key != current_key && readings.all? { |r| r.to_f > 0 }
 end

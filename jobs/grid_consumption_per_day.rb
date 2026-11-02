@@ -11,18 +11,20 @@ $meter_count_feed_yesterday = 0.0
 
 $day_state_initialized = false
 
-SCHEDULER.every '5s', :first_in => 0 do |job|
-  grid_measurements = GridMeasurements.new()
+if defined?(SCHEDULER)
+  SCHEDULER.every '5s', :first_in => 0 do |job|
+    grid_measurements = GridMeasurements.new()
 
-  unless $day_state_initialized
-    load_day_state(grid_measurements.grid_supply_total, grid_measurements.grid_feed_total)
-    $day_state_initialized = true
+    unless $day_state_initialized
+      load_day_state(grid_measurements.grid_supply_total, grid_measurements.grid_feed_total)
+      $day_state_initialized = true
+    end
+
+    calculate_deltas(grid_measurements.grid_supply_total, grid_measurements.grid_feed_total)
+
+    send_event('meter_grid_supply_sum', { current: $kwh_supply_current_day, last: $kwh_supply_last_day })
+    send_event('meter_grid_feed_sum',   { current: $kwh_feed_current_day,   last: $kwh_feed_last_day })
   end
-
-  calculate_deltas(grid_measurements.grid_supply_total, grid_measurements.grid_feed_total)
-
-  send_event('meter_grid_supply_sum', { current: $kwh_supply_current_day, last: $kwh_supply_last_day })
-  send_event('meter_grid_feed_sum',   { current: $kwh_feed_current_day,   last: $kwh_feed_last_day })
 end
 
 # Load persisted baselines on startup. If the saved state is from today, restore it
