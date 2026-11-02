@@ -125,4 +125,25 @@ class GridConsumptionPerMonthLoadTest < Minitest::Test
     assert_equal(1000.0, $meter_count_supply_month_start)
     assert_equal(900.0, $meter_count_supply_year_start)
   end
+
+  def test_fallback_baselines_are_persisted_once_both_jobs_initialised
+    StateManager.save(day: { 'date' => '2024-02-10', 'supply_baseline' => 0.0, 'feed_baseline' => 0.0,
+                             'last_supply' => 0.0, 'last_feed' => 0.0 },
+                      month: { 'year_month' => '2024-02', 'supply_baseline' => 0.0, 'feed_baseline' => 0.0,
+                               'last_supply' => 0.0, 'last_feed' => 0.0 },
+                      year: { 'year' => '2024', 'supply_baseline' => 900.0, 'feed_baseline' => 300.0 })
+    $day_state_initialized   = false
+    $month_state_initialized = false
+    now = Time.new(2024, 2, 10, 12, 0, 0)
+
+    load_day_state(1000.0, 500.0, now)
+    assert_equal(0.0, StateManager.load['month']['supply_baseline'], 'noch nicht beide Jobs initialisiert')
+
+    load_month_state(1000.0, 500.0, now)
+    saved = StateManager.load
+    assert_equal(1000.0, saved['day']['supply_baseline'])
+    assert_equal(1000.0, saved['month']['supply_baseline'])
+    assert_equal(500.0, saved['month']['feed_baseline'])
+    assert_equal(900.0, saved['year']['supply_baseline'])
+  end
 end

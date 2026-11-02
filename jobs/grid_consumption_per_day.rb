@@ -56,6 +56,10 @@ def load_day_state(current_supply, current_feed, now = Time.now)
     $meter_count_supply_yesterday = current_supply
     $meter_count_feed_yesterday   = current_feed
   end
+  # Fallback-Baseline sofort persistieren (ersetzt ggf. 0-Baselines in state.json);
+  # save_all_state schreibt erst, wenn auch der andere Job initialisiert ist.
+  $day_state_initialized = true
+  save_all_state(now)
   true
 end
 
