@@ -1,4 +1,5 @@
 require_relative 'test_helper'
+require 'ostruct'
 require_relative '../jobs/energy_meter_summary'
 
 class EnergyMeterSummaryTest < Minitest::Test
@@ -32,5 +33,66 @@ class EnergyMeterSummaryTest < Minitest::Test
   def test_nil_value_shows_placeholder
     # Ausgefallener Client darf das Widget nicht crashen
     assert_equal('– kWh', format_meter_value(nil, 'kWh', 1))
+  end
+
+  # --- overview_items ---
+
+  GLOBALS = %i[$month_state_initialized $kwh_supply_current_month $kwh_feed_current_month
+               $kwh_supply_current_year $kwh_feed_current_year].freeze
+
+  def setup
+    @saved_globals = GLOBALS.to_h { |g| [g, (eval("defined?(#{g})") ? eval(g.to_s) : :undefined)] }
+    GLOBALS.each { |g| eval("#{g} = nil") }
+    @grid = OpenStruct.new(grid_supply_total: 2241.1665, grid_feed_total: 1248.5,
+                           grid_supply_current: 1.512, grid_feed_current: 0.0)
+    @solar = OpenStruct.new(solar_watts_current: 321.4)
+    @heating = OpenStruct.new(heating_per_month: 713.0)
+  end
+
+  def teardown
+    @saved_globals.each do |g, v|
+      v == :undefined ? eval("#{g} = nil") : eval("#{g} = #{v.inspect}")
+    end
+  end
+
+  def set_month_globals
+    $month_state_initialized = true
+    $kwh_supply_current_month = 123.456
+    $kwh_feed_current_month = 45.678
+    $kwh_supply_current_year = 1234.4
+    $kwh_feed_current_year = 567.4
+  end
+
+  def values
+    overview_items(@grid, @solar, @heating).map { |i| i[:value] }
+  end
+
+  def test_overview_labels_in_order
+    labels = overview_items(@grid, @solar, @heating).map { |i| i[:label] }
+    assert_equal(['Netzbezug (Monat)', 'Einspeisung (Monat)', 'Heizung (Monat)', 'Verbrauch (Monat)',
+                  'Bezug (Jahr)', 'Einspeisung (Jahr)', 'Zählerstand Bezug', 'Zählerstand Einspeisung',
+                  'Bezug (jetzt)', 'Einspeisung (jetzt)', 'Solar (jetzt)'], labels)
+  end
+
+  def test_overview_values_when_initialized
+    set_month_globals
+    assert_equal(['123,5 kWh', '45,7 kWh', '713,0 kWh', '– kWh', '1234 kWh', '567 kWh',
+                  '2241 kWh', '1249 kWh', '1512 W', '0 W', '321 W'], values)
+  end
+
+  def test_overview_grid_rows_placeholder_when_not_initialized
+    set_month_globals
+    $month_state_initialized = false
+    v = values
+    assert_equal(['– kWh'] * 2, v[0, 2])
+    assert_equal(['– kWh'] * 2, v[4, 2])
+    assert_equal('713,0 kWh', v[2])
+  end
+
+  def test_overview_grid_rows_placeholder_when_flag_nil
+    set_month_globals
+    # nil-Flag wie bei noch nicht gesetztem Global
+    $month_state_initialized = nil
+    assert_equal('– kWh', values[0])
   end
 end

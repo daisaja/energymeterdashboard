@@ -4,24 +4,8 @@ require_relative 'meter_helper/heating_meter_client'
 
 if defined?(SCHEDULER)
   SCHEDULER.every '3s', :overlap => false do
-    grid_measurements = GridMeasurements.new()
-    solar_measurements = SolarMeasurements.new()
-    heating_measurements = HeatingMeasurements.new()
-
-    grid_meter_values = {
-      'grid_supply_per_month' => {label: 'Netzbezug (Monat)' , value: format_meter_value(grid_measurements.grid_supply_per_month, 'kWh', 1)},
-      'grid_feed_per_month' => {label: 'Einspeisung (Monat)' , value: format_meter_value(grid_measurements.grid_feed_per_month, 'kWh', 1)},
-      'heating_per_month' => {label: 'Heizung (Monat)' , value: format_meter_value(heating_measurements.heating_per_month, 'kWh', 1)},
-      'energy_consumption_per_month' => {label: 'Verbrauch (Monat)' , value: format_meter_value(grid_measurements.energy_consumption_per_month, 'kWh', 1)}, # not implemented yet
-      'grid_supply_total' => {label: 'Bezug (Jahr)' , value: format_meter_value(grid_measurements.grid_supply_total, 'kWh', 0)},
-      'grid_feed_total' => {label: 'Einspeisung (Jahr)' , value: format_meter_value(grid_measurements.grid_feed_total, 'kWh', 0)},
-      # Client liefert kW, Solar liefert W → für einheitliche Anzeige alles in W
-      'grid_supply_current' => {label: 'Bezug (jetzt)' , value: format_meter_value(grid_measurements.grid_supply_current * 1000, 'W', 0)},
-      'grid_feed_current' => {label: 'Einspeisung (jetzt)' , value: format_meter_value(grid_measurements.grid_feed_current * 1000, 'W', 0)},
-      'solar_production_current' => {label: 'Solar (jetzt)' , value: format_meter_value(solar_measurements.solar_watts_current, 'W', 0)}
-    }
-
-    send_event('grid_meter_values', { items: grid_meter_values.values })
+    items = overview_items(GridMeasurements.new(), SolarMeasurements.new(), HeatingMeasurements.new())
+    send_event('grid_meter_values', { items: items })
   end
 end
 
@@ -38,4 +22,26 @@ def format_meter_value(value, unit, decimals)
 
   number = format("%.#{decimals}f", value.to_f.round(decimals))
   "#{number.tr('.', ',')} #{unit}"
+end
+
+# Baut die Zeilen für das Overview-Widget (Reihenfolge = Anzeige).
+# Monats-/Jahreswerte kommen aus grid_consumption_per_month.rb (Globals) und sind
+# erst gültig, wenn $month_state_initialized true ist – vorher "– kWh".
+def overview_items(grid, solar, heating)
+  month_ready = defined?($month_state_initialized) && $month_state_initialized == true
+
+  [
+    {label: 'Netzbezug (Monat)', value: format_meter_value((month_ready && defined?($kwh_supply_current_month) ? $kwh_supply_current_month : nil), 'kWh', 1)},
+    {label: 'Einspeisung (Monat)', value: format_meter_value((month_ready && defined?($kwh_feed_current_month) ? $kwh_feed_current_month : nil), 'kWh', 1)},
+    {label: 'Heizung (Monat)', value: format_meter_value(heating.heating_per_month, 'kWh', 1)},
+    {label: 'Verbrauch (Monat)', value: format_meter_value(nil, 'kWh', 1)}, # noch nicht implementiert
+    {label: 'Bezug (Jahr)', value: format_meter_value((month_ready && defined?($kwh_supply_current_year) ? $kwh_supply_current_year : nil), 'kWh', 0)},
+    {label: 'Einspeisung (Jahr)', value: format_meter_value((month_ready && defined?($kwh_feed_current_year) ? $kwh_feed_current_year : nil), 'kWh', 0)},
+    {label: 'Zählerstand Bezug', value: format_meter_value(grid.grid_supply_total, 'kWh', 0)},
+    {label: 'Zählerstand Einspeisung', value: format_meter_value(grid.grid_feed_total, 'kWh', 0)},
+    # Client liefert kW, Solar liefert W → für einheitliche Anzeige alles in W
+    {label: 'Bezug (jetzt)', value: format_meter_value(grid.grid_supply_current * 1000, 'W', 0)},
+    {label: 'Einspeisung (jetzt)', value: format_meter_value(grid.grid_feed_current * 1000, 'W', 0)},
+    {label: 'Solar (jetzt)', value: format_meter_value(solar.solar_watts_current, 'W', 0)}
+  ]
 end
