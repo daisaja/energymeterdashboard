@@ -56,7 +56,7 @@ def calculate_month_values(supply, feed, now = Time.now)
       $meter_count_feed_year_start   = feed
     end
     $month_period_key = current_key
-    StateManager.save(day: current_day_state, month: current_month_state(now), year: current_year_state(now))
+    save_all_state(now)
   end
 
   $kwh_supply_current_month = (supply - $meter_count_supply_month_start).round(1)

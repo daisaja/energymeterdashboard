@@ -75,10 +75,18 @@ def calculate_deltas(supply_now, feed_now, now = Time.now)
     $meter_count_supply_yesterday = supply_now
     $meter_count_feed_yesterday   = feed_now
     $day_period_key               = current_key
-    StateManager.save(day: current_day_state(now), month: current_month_state(now), year: current_year_state(now))
+    save_all_state(now)
   end
   $kwh_supply_current_day = (supply_now - $meter_count_supply_yesterday).round(1)
   $kwh_feed_current_day   = (feed_now   - $meter_count_feed_yesterday).round(1)
+end
+
+# Persistiert Tag, Monat und Jahr gemeinsam. Solange nicht beide Jobs ihre Baselines
+# geladen haben, wuerden die Initialwerte (0.0) der anderen Periode auf Platte landen.
+def save_all_state(now = Time.now)
+  return false unless $day_state_initialized && $month_state_initialized
+  StateManager.save(day: current_day_state(now), month: current_month_state(now), year: current_year_state(now))
+  true
 end
 
 def current_day_state(now = Time.now)

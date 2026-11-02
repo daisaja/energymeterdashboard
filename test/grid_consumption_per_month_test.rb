@@ -9,6 +9,8 @@ class GridConsumptionPerMonthTest < Minitest::Test
     @tmp_dir = Dir.mktmpdir
     ENV['STATE_FILE'] = File.join(@tmp_dir, 'state.json')
     # Zustand: Januar-Ende, Baselines 1000/500, Januar-Key
+    $day_state_initialized   = true
+    $month_state_initialized = true
     $month_period_key               = '2024-01'
     $meter_count_supply_month_start = 1000.0
     $meter_count_feed_month_start   = 500.0
@@ -66,6 +68,12 @@ class GridConsumptionPerMonthTest < Minitest::Test
     calculate_month_values(1200.0, 600.0, Time.new(2024, 2, 1, 0, 1, 30))
     assert_equal('2024-02', $month_period_key)
     assert_equal(200.0, $kwh_supply_last_month)
+  end
+
+  def test_rollover_does_not_persist_uninitialized_day_state
+    $day_state_initialized = false
+    calculate_month_values(1200.0, 600.0, Time.new(2024, 2, 1, 0, 0, 30))
+    assert_nil(StateManager.load)
   end
 
   def test_year_baseline_reset_only_in_january

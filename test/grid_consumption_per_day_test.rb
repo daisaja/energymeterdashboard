@@ -8,6 +8,8 @@ class GridConsumptionPerDayTest < Minitest::Test
   def setup
     @tmp_dir = Dir.mktmpdir
     ENV['STATE_FILE'] = File.join(@tmp_dir, 'state.json')
+    $day_state_initialized   = true
+    $month_state_initialized = true
     $day_period_key               = '2024-01-15'
     $meter_count_supply_yesterday = 1000.0
     $meter_count_feed_yesterday   = 500.0
@@ -29,6 +31,17 @@ class GridConsumptionPerDayTest < Minitest::Test
     assert_equal(1010.0, $meter_count_supply_yesterday)
     assert_equal(10.0, $kwh_supply_last_day)
     assert_equal(5.0, $kwh_feed_last_day)
+  end
+
+  def test_rollover_does_not_persist_uninitialized_month_state
+    $month_state_initialized = false
+    calculate_deltas(1010.0, 505.0, Time.new(2024, 1, 16, 0, 0, 3))
+    assert_nil(StateManager.load)
+  end
+
+  def test_rollover_persists_when_all_states_initialized
+    calculate_deltas(1010.0, 505.0, Time.new(2024, 1, 16, 0, 0, 3))
+    assert_equal('2024-01-16', StateManager.load['day']['date'])
   end
 
   def test_day_rollover_runs_only_once
