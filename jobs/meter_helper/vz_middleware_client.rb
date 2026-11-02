@@ -9,20 +9,38 @@ class VzMiddlewareClient
   WINDOW_SECONDS = 3600
   TIMEOUT_SECONDS = 5
 
-  # Liefert die Zeit des neuesten Tupels (Time) oder nil bei Fehler/keinen Daten.
-  def self.last_tuple_time(now = Time.now, uuid = UUID_GRID_SUPPLY_TOTAL)
+  # Liefert eines von:
+  #   Time      – Zeitpunkt des neuesten Tupels
+  #   :empty    – gültige Antwort ohne Tupel
+  #   :db_error – Middleware antwortet, meldet aber einen Datenbankfehler (SQLSTATE)
+  #   :error    – nicht erreichbar, HTTP-Fehler, Exception-Body oder ungültige Antwort
+  def self.fetch(now = Time.now, uuid = UUID_GRID_SUPPLY_TOTAL)
     from_ms = (now.to_i - WINDOW_SECONDS) * 1000
     to_ms   = now.to_i * 1000
     response = HTTParty.get("#{MIDDLEWARE_URL}/data/#{uuid}.json",
                             query: { from: from_ms, to: to_ms }, timeout: TIMEOUT_SECONDS)
-    return nil unless response.code == 200
+    return :error unless response.code == 200
 
-    tuples = response.parsed_response.dig('data', 'tuples')
-    return nil if tuples.nil? || tuples.empty?
+    body = response.parsed_response
+    return :error unless body.is_a?(Hash)
+
+    if body.key?('exception')
+      message = body['exception'].is_a?(Hash) ? body['exception']['message'].to_s : body['exception'].to_s
+      return message.include?('SQLSTATE') ? :db_error : :error
+    end
+
+    tuples = body.dig('data', 'tuples')
+    return :empty if tuples.nil? || tuples.empty?
 
     Time.at(tuples.map(&:first).max / 1000.0)
   rescue => e
     puts "[VzMiddleware] Fehler: #{e.message}"
-    nil
+    :error
+  end
+
+  # Wie fetch, aber nur die Zeit (Time) oder nil bei Fehler/keinen Daten.
+  def self.last_tuple_time(now = Time.now, uuid = UUID_GRID_SUPPLY_TOTAL)
+    result = fetch(now, uuid)
+    result.is_a?(Time) ? result : nil
   end
 end

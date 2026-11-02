@@ -60,10 +60,31 @@ class VzloggerStatusTest < Minitest::Test
     assert_equal('vzlogger: seit Start keine Daten', result[:message])
   end
 
-  def test_middleware_nil
-    result = status(NOW - 5, nil)
+  def test_middleware_empty
+    result = status(NOW - 5, :empty)
     assert_equal('warning', result[:status])
-    assert_equal('Middleware: seit Start keine Daten', result[:message])
+    assert_equal('Middleware: keine Daten', result[:message])
+  end
+
+  def test_middleware_nil_counts_as_empty
+    assert_equal('Middleware: keine Daten', status(NOW - 5, nil)[:message])
+  end
+
+  def test_middleware_error
+    result = status(NOW - 5, :error)
+    assert_equal('warning', result[:status])
+    assert_equal('Middleware nicht erreichbar', result[:message])
+  end
+
+  def test_middleware_db_error
+    result = status(NOW - 5, :db_error)
+    assert_equal('warning', result[:status])
+    assert_equal('Middleware: Datenbank nicht erreichbar', result[:message])
+  end
+
+  def test_local_offline_combined_with_middleware_error
+    assert_equal('vzlogger offline seit 14 min / Middleware nicht erreichbar',
+                 status(NOW - 14 * 60, :error)[:message])
   end
 
   def test_both_problems_combined
@@ -74,7 +95,7 @@ class VzloggerStatusTest < Minitest::Test
 
   def test_both_nil
     result = status(nil, nil)
-    assert_equal('vzlogger: seit Start keine Daten / Middleware: seit Start keine Daten', result[:message])
+    assert_equal('vzlogger: seit Start keine Daten / Middleware: keine Daten', result[:message])
   end
 
   def test_custom_threshold
