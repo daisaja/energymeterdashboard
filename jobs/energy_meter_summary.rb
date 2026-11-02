@@ -30,7 +30,9 @@ end
 def overview_items(grid, solar, heating)
   month_ready = defined?($month_state_initialized) && $month_state_initialized == true
 
-  [
+  warning = defined?($vzlogger_warning) ? $vzlogger_warning : nil
+
+  items = [
     {label: 'Netzbezug (Monat)', value: format_meter_value((month_ready && defined?($kwh_supply_current_month) ? $kwh_supply_current_month : nil), 'kWh', 1)},
     {label: 'Einspeisung (Monat)', value: format_meter_value((month_ready && defined?($kwh_feed_current_month) ? $kwh_feed_current_month : nil), 'kWh', 1)},
     {label: 'Heizung (Monat)', value: format_meter_value(heating.heating_per_month, 'kWh', 1)},
@@ -44,4 +46,8 @@ def overview_items(grid, solar, heating)
     {label: 'Einspeisung (jetzt)', value: format_meter_value(grid.grid_feed_current * 1000, 'W', 0)},
     {label: 'Solar (jetzt)', value: format_meter_value(solar.solar_watts_current, 'W', 0)}
   ]
+
+  # Warnung aus vzlogger_status.rb (vzlogger/Middleware ausgefallen) als erste Zeile
+  items.unshift({label: '⚠ Warnung', value: warning}) if warning
+  items
 end
