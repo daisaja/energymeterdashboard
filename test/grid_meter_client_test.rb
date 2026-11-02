@@ -28,10 +28,8 @@ class GridMeterClientTest < Minitest::Test
 
     grid_measures = GridMeasurements.new
     assert_equal(12345.0, grid_measures.grid_feed_total)
-    assert_equal(0.0,     grid_measures.grid_feed_per_month)   # nicht mehr vom Zähler geliefert
     assert_equal(0.0,     grid_measures.grid_feed_current)     # kein Einspeisung bei positivem Wert
     assert_equal(8765.0,  grid_measures.grid_supply_total)
-    assert_equal(0.0,     grid_measures.grid_supply_per_month) # nicht mehr vom Zähler geliefert
     assert_equal(1.2,     grid_measures.grid_supply_current)
   end
 

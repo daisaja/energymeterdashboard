@@ -11,9 +11,8 @@ VZ_LOGGER_URL = "http://#{GRID_METER_HOST}:8081/"
 class GridMeasurements
   @@last_values = {}
 
-  attr_reader :grid_feed_total, :grid_feed_per_month, :grid_feed_current,
-  :grid_supply_total, :grid_supply_per_month, :grid_supply_current,
-  :energy_consumption_per_month
+  attr_reader :grid_feed_total, :grid_feed_current,
+  :grid_supply_total, :grid_supply_current
 
   def initialize
     fetch_data_from_grid_meter
@@ -22,12 +21,9 @@ class GridMeasurements
   def to_s()
     super +
     " grid_feed_total: #{grid_feed_total}
-    grid_feed_per_month: #{grid_feed_per_month}
     grid_feed_current: #{grid_feed_current}
     grid_supply_total: #{grid_supply_total}
-    grid_supply_per_month: #{grid_supply_per_month}
-    grid_supply_current: #{grid_supply_current}
-    energy_consumption_per_month: #{energy_consumption_per_month}"
+    grid_supply_current: #{grid_supply_current}"
   end
 
   def fetch_data_from_grid_meter
@@ -43,10 +39,8 @@ class GridMeasurements
     @grid_supply_current = raw_power_w > 0 ? (raw_power_w / 1000.0) : 0.0
     @grid_feed_current   = raw_power_w < 0 ? (raw_power_w.abs / 1000.0) : 0.0
 
-    # Perioden-Register nicht verfügbar am E320 via SML
-    @grid_supply_per_month = 0.0
-    @grid_feed_per_month   = 0.0
-    @energy_consumption_per_month = 0.0
+    # Perioden-Register gibt es am E320 via SML nicht; Monats-/Jahreswerte
+    # berechnet grid_consumption_per_month.rb aus den Zählerständen.
 
     save_values
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
@@ -60,23 +54,17 @@ class GridMeasurements
   def save_values
     @@last_values = {
       grid_feed_total: @grid_feed_total,
-      grid_feed_per_month: @grid_feed_per_month,
       grid_feed_current: @grid_feed_current,
       grid_supply_total: @grid_supply_total,
-      grid_supply_per_month: @grid_supply_per_month,
-      grid_supply_current: @grid_supply_current,
-      energy_consumption_per_month: @energy_consumption_per_month
+      grid_supply_current: @grid_supply_current
     }
   end
 
   def restore_last_values
     @grid_feed_total = @@last_values[:grid_feed_total] || 0.0
-    @grid_feed_per_month = @@last_values[:grid_feed_per_month] || 0.0
     @grid_feed_current = @@last_values[:grid_feed_current] || 0.0
     @grid_supply_total = @@last_values[:grid_supply_total] || 0.0
-    @grid_supply_per_month = @@last_values[:grid_supply_per_month] || 0.0
     @grid_supply_current = @@last_values[:grid_supply_current] || 0.0
-    @energy_consumption_per_month = @@last_values[:energy_consumption_per_month] || 0.0
   end
 end
 
