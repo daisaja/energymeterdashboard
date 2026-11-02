@@ -24,9 +24,11 @@ if defined?(SCHEDULER)
     feed   = grid_measurements.grid_feed_total
 
     unless $month_state_initialized
-      load_month_state(supply, feed)
-      $month_state_initialized = true
+      $month_state_initialized = load_month_state(supply, feed)
     end
+
+    # Ohne gueltige Baseline (Zaehler nicht erreichbar) diesen Durchlauf auslassen
+    next unless $month_state_initialized
 
     calculate_month_values(supply, feed)
 
@@ -40,6 +42,9 @@ end
 # Monatswechsel genau einmal pro Monat (Vergleich des Perioden-Keys statt Zeitfenster),
 # danach aktuelle Monats-/Jahreswerte aus Zählerstandsdifferenzen berechnen.
 def calculate_month_values(supply, feed, now = Time.now)
+  # Ungueltiger Zaehlerstand: Werte unveraendert lassen (sonst negative Differenzen)
+  return unless supply.to_f > 0 && feed.to_f > 0
+
   current_key = now.strftime('%Y-%m')
   if rollover_due?($month_period_key, current_key, supply, feed)
     $kwh_supply_last_month          = $kwh_supply_current_month
@@ -61,32 +66,46 @@ def calculate_month_values(supply, feed, now = Time.now)
 end
 
 # Load persisted month/year baselines on startup.
-def load_month_state(current_supply, current_feed)
+# Gibt true zurueck, wenn gueltige Baselines gesetzt wurden. Ein Zaehlerstand <= 0 wird nie
+# als Baseline uebernommen (-> false, Retry im naechsten Durchlauf); persistierte
+# 0-Baselines werden verworfen.
+def load_month_state(current_supply, current_feed, now = Time.now)
   state = StateManager.load
+  valid_reading = current_supply.to_f > 0 && current_feed.to_f > 0
 
-  if state && state['month']['year_month'] == Time.now.strftime('%Y-%m')
+  month = state && state['month']
+  month_ok = month && month['year_month'] == now.strftime('%Y-%m') &&
+             month['supply_baseline'].to_f > 0 && month['feed_baseline'].to_f > 0
+  year = state && state['year']
+  year_ok = year && year['year'] == now.year.to_s &&
+            year['supply_baseline'].to_f > 0 && year['feed_baseline'].to_f > 0
+
+  return false unless (month_ok && year_ok) || valid_reading
+
+  if month_ok
     puts "[MonthJob] Restoring month state from #{state['saved_at']}"
-    $month_period_key               = state['month']['year_month']
-    $meter_count_supply_month_start = state['month']['supply_baseline'].to_f
-    $meter_count_feed_month_start   = state['month']['feed_baseline'].to_f
-    $kwh_supply_last_month          = state['month']['last_supply'].to_f
-    $kwh_feed_last_month            = state['month']['last_feed'].to_f
+    $month_period_key               = month['year_month']
+    $meter_count_supply_month_start = month['supply_baseline'].to_f
+    $meter_count_feed_month_start   = month['feed_baseline'].to_f
+    $kwh_supply_last_month          = month['last_supply'].to_f
+    $kwh_feed_last_month            = month['last_feed'].to_f
   else
     puts "[MonthJob] No valid month state — using current reading as baseline"
-    $month_period_key               = Time.now.strftime('%Y-%m')
+    $month_period_key               = now.strftime('%Y-%m')
     $meter_count_supply_month_start = current_supply
     $meter_count_feed_month_start   = current_feed
   end
 
-  if state && state['year']['year'] == Time.now.year.to_s
+  if year_ok
     puts "[MonthJob] Restoring year state from #{state['saved_at']}"
-    $meter_count_supply_year_start = state['year']['supply_baseline'].to_f
-    $meter_count_feed_year_start   = state['year']['feed_baseline'].to_f
+    $meter_count_supply_year_start = year['supply_baseline'].to_f
+    $meter_count_feed_year_start   = year['feed_baseline'].to_f
   else
     puts "[MonthJob] No valid year state — using current reading as baseline"
     $meter_count_supply_year_start = current_supply
     $meter_count_feed_year_start   = current_feed
   end
+  true
 end
 
 def current_month_state(now = Time.now)
