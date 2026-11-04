@@ -83,4 +83,10 @@ class EnergyflowTest < Minitest::Test
     )
     assert_equal 78, payload[:battery_soc]
   end
+
+  def test_kwh_or_nil_keeps_unknown_value_nil
+    assert_nil kwh_or_nil(nil)
+    assert_equal 0.0, kwh_or_nil(0)
+    assert_equal 3.4, kwh_or_nil('3.4')
+  end
 end
