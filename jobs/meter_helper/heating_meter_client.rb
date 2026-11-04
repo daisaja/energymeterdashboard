@@ -61,10 +61,10 @@ class HeatingMeasurements
     restore_last_values
   end
 
-  # Payload für das Number-Widget. Veraltete Tageswerte (nil) werden als 0.0
-  # gesendet, sonst zeigt das Widget "NaN%".
+  # Payload für das Nullnumber-Widget. Veraltete Tageswerte (nil) werden
+  # durchgereicht, das Widget zeigt dann "–" statt einer falschen 0.
   def day_event_payload
-    { current: heating_kwh_current_day || 0.0, last: heating_kwh_last_day || 0.0 }
+    { current: heating_kwh_current_day, last: heating_kwh_last_day }
   end
 
   def save_values
@@ -76,11 +76,12 @@ class HeatingMeasurements
     }
   end
 
+  # kWh-Werte ohne letzten Stand bleiben nil (unbekannt), nicht 0.0.
   def restore_last_values
     @heating_watts_current = @@last_values[:heating_watts_current] || 0.0
-    @heating_per_month = @@last_values[:heating_per_month] || 0.0
-    @heating_kwh_current_day = @@last_values[:heating_kwh_current_day] || 0.0
-    @heating_kwh_last_day = @@last_values[:heating_kwh_last_day] || 0.0
+    @heating_per_month = @@last_values[:heating_per_month]
+    @heating_kwh_current_day = @@last_values[:heating_kwh_current_day]
+    @heating_kwh_last_day = @@last_values[:heating_kwh_last_day]
   end
 
   # Startdatum der Periode aus "tm" (z.B. "2026-09-23T00:00:00"), nil wenn ungültig.

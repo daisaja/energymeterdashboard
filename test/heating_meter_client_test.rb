@@ -42,9 +42,9 @@ class HeatingMeterClientTest < Minitest::Test
 
     heating = HeatingMeasurements.new
     assert_equal(0.0, heating.heating_watts_current)
-    assert_equal(0.0, heating.heating_per_month)
-    assert_equal(0.0, heating.heating_kwh_current_day)
-    assert_equal(0.0, heating.heating_kwh_last_day)
+    assert_nil(heating.heating_per_month)
+    assert_nil(heating.heating_kwh_current_day)
+    assert_nil(heating.heating_kwh_last_day)
   end
 
   def test_heating_meter_client_host_unreachable
@@ -53,9 +53,9 @@ class HeatingMeterClientTest < Minitest::Test
 
     heating = HeatingMeasurements.new
     assert_equal(0.0, heating.heating_watts_current)
-    assert_equal(0.0, heating.heating_per_month)
-    assert_equal(0.0, heating.heating_kwh_current_day)
-    assert_equal(0.0, heating.heating_kwh_last_day)
+    assert_nil(heating.heating_per_month)
+    assert_nil(heating.heating_kwh_current_day)
+    assert_nil(heating.heating_kwh_last_day)
   end
 
   def test_heating_meter_client_keeps_last_values_on_error
@@ -198,7 +198,7 @@ class HeatingMeterClientTest < Minitest::Test
     assert_equal(971, heating.heating_watts_current)
   end
 
-  def test_stale_data_then_connection_error_falls_back_to_zero
+  def test_stale_data_then_connection_error_stays_nil
     HeatingMeasurements.class_variable_set(:@@last_values, {})
     stub_youless(month_vals: [1], day_vals: ['  400'], month_tm: '2025-11-01T00:00:00')
     HeatingMeasurements.new(Date.new(2026, 11, 4))
@@ -206,15 +206,15 @@ class HeatingMeterClientTest < Minitest::Test
     stub_request(:get, "#{HEATING_BASE_URL}/a?f=j").to_raise(Errno::ECONNREFUSED)
     heating = HeatingMeasurements.new(Date.new(2026, 11, 4))
     assert_equal(971, heating.heating_watts_current)
-    assert_equal(0.0, heating.heating_per_month)
+    assert_nil(heating.heating_per_month)
   end
 
-  def test_day_event_payload_replaces_nil_with_zero
-    # Number-Widget zeigt bei nil "NaN%" – daher 0.0 senden
+  def test_day_event_payload_stale_data_is_nil
+    # Veraltete Gerätedaten: nil durchreichen, Widget zeigt "–"
     stub_youless(month_vals: [1], day_vals: ['  400'],
                  day_tm: '2026-09-23T00:00:00', last_day_tm: '2026-09-22T00:00:00')
     heating = HeatingMeasurements.new(Date.new(2026, 11, 4))
-    assert_equal({ current: 0.0, last: 0.0 }, heating.day_event_payload)
+    assert_equal({ current: nil, last: nil }, heating.day_event_payload)
   end
 
   def test_day_event_payload_with_values
@@ -222,5 +222,27 @@ class HeatingMeterClientTest < Minitest::Test
                  day_tm: '2026-11-04T00:00:00', last_day_tm: '2026-11-03T00:00:00')
     heating = HeatingMeasurements.new(Date.new(2026, 11, 4))
     assert_equal({ current: 1.4, last: 1.4 }, heating.day_event_payload)
+  end
+
+  def test_restore_remembers_nil_kwh_values_as_nil
+    # Gerät lieferte veraltete Daten (nil) und fällt dann aus: weiter nil, nicht 0.0
+    HeatingMeasurements.class_variable_set(:@@last_values, {
+      heating_watts_current: 900, heating_per_month: nil,
+      heating_kwh_current_day: nil, heating_kwh_last_day: nil
+    })
+    stub_request(:get, "#{HEATING_BASE_URL}/a?f=j").to_raise(Errno::ECONNREFUSED)
+
+    heating = HeatingMeasurements.new
+    assert_equal(900, heating.heating_watts_current)
+    assert_nil(heating.heating_kwh_current_day)
+    assert_nil(heating.heating_kwh_last_day)
+    assert_nil(heating.heating_per_month)
+  end
+
+  def test_day_event_payload_passes_nil_through
+    heating = HeatingMeasurements.allocate
+    heating.instance_variable_set(:@heating_kwh_current_day, nil)
+    heating.instance_variable_set(:@heating_kwh_last_day, 2.5)
+    assert_equal({ current: nil, last: 2.5 }, heating.day_event_payload)
   end
 end
