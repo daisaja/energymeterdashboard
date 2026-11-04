@@ -38,7 +38,9 @@ class EnergyMeterSummaryTest < Minitest::Test
   # --- overview_items ---
 
   GLOBALS = %i[$month_state_initialized $kwh_supply_current_month $kwh_feed_current_month
-               $kwh_supply_current_year $kwh_feed_current_year $vzlogger_warning].freeze
+               $kwh_supply_current_year $kwh_feed_current_year $vzlogger_warning
+               $kwh_consumption_current_month $kwh_self_consumption_current_month
+               $self_consumption_ratio_current_month $autarky_current_month].freeze
 
   def setup
     @saved_globals = GLOBALS.to_h { |g| [g, (eval("defined?(#{g})") ? eval(g.to_s) : :undefined)] }
@@ -61,6 +63,10 @@ class EnergyMeterSummaryTest < Minitest::Test
     $kwh_feed_current_month = 45.678
     $kwh_supply_current_year = 1234.4
     $kwh_feed_current_year = 567.4
+    $kwh_consumption_current_month = 465.04
+    $kwh_self_consumption_current_month = 150.0
+    $self_consumption_ratio_current_month = 74.6
+    $autarky_current_month = 35.5
   end
 
   def values
@@ -70,13 +76,14 @@ class EnergyMeterSummaryTest < Minitest::Test
   def test_overview_labels_in_order
     labels = overview_items(@grid, @solar, @heating).map { |i| i[:label] }
     assert_equal(['Netzbezug (Monat)', 'Einspeisung (Monat)', 'Heizung (Monat)', 'Verbrauch (Monat)',
-                  'Bezug (Jahr)', 'Einspeisung (Jahr)', 'Zählerstand Bezug', 'Zählerstand Einspeisung',
+                  'Eigenverbrauch (Monat)', 'Eigenverbrauchsquote (Monat)', 'Autarkie (Monat)', 'Bezug (Jahr)', 'Einspeisung (Jahr)', 'Zählerstand Bezug', 'Zählerstand Einspeisung',
                   'Bezug (jetzt)', 'Einspeisung (jetzt)', 'Solar (jetzt)'], labels)
   end
 
   def test_overview_values_when_initialized
     set_month_globals
-    assert_equal(['123,5 kWh', '45,7 kWh', '713,0 kWh', '– kWh', '1234 kWh', '567 kWh',
+    assert_equal(['123,5 kWh', '45,7 kWh', '713,0 kWh', '465,0 kWh',
+                  '150,0 kWh', '75 %', '36 %', '1234 kWh', '567 kWh',
                   '2241 kWh', '1249 kWh', '1512 W', '0 W', '321 W'], values)
   end
 
@@ -85,8 +92,18 @@ class EnergyMeterSummaryTest < Minitest::Test
     $month_state_initialized = false
     v = values
     assert_equal(['– kWh'] * 2, v[0, 2])
-    assert_equal(['– kWh'] * 2, v[4, 2])
+    assert_equal(['– kWh', '– kWh', '– %', '– %'], v[3, 4])
+    assert_equal(['– kWh'] * 2, v[7, 2])
     assert_equal('713,0 kWh', v[2])
+  end
+
+  def test_overview_consumption_rows_placeholder_when_values_nil
+    set_month_globals
+    $kwh_consumption_current_month = nil
+    $kwh_self_consumption_current_month = nil
+    $self_consumption_ratio_current_month = nil
+    $autarky_current_month = nil
+    assert_equal(['– kWh', '– kWh', '– %', '– %'], values[3, 4])
   end
 
   def test_overview_grid_rows_placeholder_when_flag_nil
@@ -106,6 +123,6 @@ class EnergyMeterSummaryTest < Minitest::Test
     items = overview_items(@grid, @solar, @heating)
     assert_equal({ label: '⚠ Warnung', value: 'vzlogger offline seit 14 min' }, items.first)
     assert_equal('Netzbezug (Monat)', items[1][:label])
-    assert_equal(12, items.size)
+    assert_equal(15, items.size)
   end
 end

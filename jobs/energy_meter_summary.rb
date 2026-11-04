@@ -36,7 +36,10 @@ def overview_items(grid, solar, heating)
     {label: 'Netzbezug (Monat)', value: format_meter_value((month_ready && defined?($kwh_supply_current_month) ? $kwh_supply_current_month : nil), 'kWh', 1)},
     {label: 'Einspeisung (Monat)', value: format_meter_value((month_ready && defined?($kwh_feed_current_month) ? $kwh_feed_current_month : nil), 'kWh', 1)},
     {label: 'Heizung (Monat)', value: format_meter_value(heating.heating_per_month, 'kWh', 1)},
-    {label: 'Verbrauch (Monat)', value: format_meter_value(nil, 'kWh', 1)}, # noch nicht implementiert
+    {label: 'Verbrauch (Monat)', value: format_meter_value((month_ready ? $kwh_consumption_current_month : nil), 'kWh', 1)},
+    {label: 'Eigenverbrauch (Monat)', value: format_meter_value((month_ready ? $kwh_self_consumption_current_month : nil), 'kWh', 1)},
+    {label: 'Eigenverbrauchsquote (Monat)', value: format_meter_value((month_ready ? $self_consumption_ratio_current_month : nil), '%', 0)},
+    {label: 'Autarkie (Monat)', value: format_meter_value((month_ready ? $autarky_current_month : nil), '%', 0)},
     {label: 'Bezug (Jahr)', value: format_meter_value((month_ready && defined?($kwh_supply_current_year) ? $kwh_supply_current_year : nil), 'kWh', 0)},
     {label: 'Einspeisung (Jahr)', value: format_meter_value((month_ready && defined?($kwh_feed_current_year) ? $kwh_feed_current_year : nil), 'kWh', 0)},
     {label: 'Zählerstand Bezug', value: format_meter_value(grid.grid_supply_total, 'kWh', 0)},
