@@ -95,4 +95,50 @@ class HeatingMeterClientTest < Minitest::Test
     heating = HeatingMeasurements.new
     assert_equal(1500, heating.heating_watts_current)
   end
+
+  # --- YouLess-Zahlenformat: Dezimalkomma, führende Leerzeichen, null ---
+
+  def stub_youless(month_vals:, day_vals:, tm: nil)
+    json = { headers: { CONTENT_TYPE_JSON => APPLICATION_JSON } }
+    stub_request(:get, "#{HEATING_BASE_URL}/a?f=j")
+      .to_return(json.merge(status: 200, body: { 'pwr' => 971 }.to_json))
+    stub_request(:get, %r{#{Regexp.escape(HEATING_BASE_URL)}/V\?f=j&m=\d+})
+      .to_return(json.merge(status: 200, body: { 'val' => month_vals }.to_json))
+    stub_request(:get, "#{HEATING_BASE_URL}/V?d=0&f=j")
+      .to_return(json.merge(status: 200, body: { 'val' => day_vals }.to_json))
+    stub_request(:get, "#{HEATING_BASE_URL}/V?d=1&f=j")
+      .to_return(json.merge(status: 200, body: { 'val' => day_vals }.to_json))
+  end
+
+  def test_parse_youless_number_with_decimal_comma
+    heating = HeatingMeasurements.allocate
+    assert_in_delta(8.1, heating.parse_youless_number(' 8,100'), 0.0001)
+    assert_in_delta(45.0, heating.parse_youless_number(' 45,000'), 0.0001)
+    assert_equal(400.0, heating.parse_youless_number('  400'))
+  end
+
+  def test_parse_youless_number_nil_and_empty
+    heating = HeatingMeasurements.allocate
+    assert_nil(heating.parse_youless_number(nil))
+    assert_nil(heating.parse_youless_number(''))
+    assert_nil(heating.parse_youless_number('   '))
+  end
+
+  def test_month_sum_with_decimal_comma_and_null
+    stub_youless(month_vals: [' 45,000', ' 43,000', '  8,100', nil], day_vals: [100])
+    heating = HeatingMeasurements.new
+    assert_in_delta(96.1, heating.heating_per_month, 0.0001)
+  end
+
+  def test_day_sum_with_padded_watt_strings
+    stub_youless(month_vals: [1], day_vals: ['  400', ' 1020', nil])
+    heating = HeatingMeasurements.new
+    assert_equal(1.4, heating.heating_kwh_current_day)
+  end
+
+  def test_day_sum_with_decimal_comma
+    stub_youless(month_vals: [1], day_vals: ['  400,5', ' 1020', nil])
+    heating = HeatingMeasurements.new
+    assert_equal(1.4, heating.heating_kwh_current_day)
+  end
 end

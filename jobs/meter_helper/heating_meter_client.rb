@@ -32,7 +32,8 @@ class HeatingMeasurements
       response = HTTParty.get(YOULESS_MONTHS_URL % {month: Date.today.month})
       @heating_per_month = 0.0
       response['val'].each do |value|
-        @heating_per_month += value.to_f
+        number = parse_youless_number(value)
+        @heating_per_month += number if number
       end
 
       response = HTTParty.get(YOULESS_CURRENT_DAY_KWH)
@@ -66,11 +67,24 @@ class HeatingMeasurements
     @heating_kwh_last_day = @@last_values[:heating_kwh_last_day] || 0.0
   end
 
+  # YouLess liefert Zahlen als String mit führenden Leerzeichen und deutschem
+  # Dezimalkomma (z.B. " 8,100"). Gibt Float zurück, nil bei nil/leer.
+  def parse_youless_number(value)
+    return nil if value.nil?
+    return value.to_f if value.is_a?(Numeric)
+
+    str = value.to_s.strip
+    return nil if str.empty?
+
+    str.tr(',', '.').to_f
+  end
+
   def calculate_sum_of_watts(response_with_data)
     array = response_with_data.parsed_response['val']
-    last_day_sum = 0
+    last_day_sum = 0.0
     array.each { |a|
-      last_day_sum += a.to_i
+      number = parse_youless_number(a)
+      last_day_sum += number if number
     }
     return (last_day_sum / 1000.0).round(1)
   end
