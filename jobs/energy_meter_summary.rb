@@ -47,7 +47,7 @@ def overview_items(grid, solar, heating)
     {label: 'Solar (jetzt)', value: format_meter_value(solar.solar_watts_current, 'W', 0)}
   ]
 
-  # Warnung aus vzlogger_status.rb (vzlogger/Middleware ausgefallen) als erste Zeile
+  # Warnung aus vzlogger_status.rb (vzlogger ausgefallen) als erste Zeile
   items.unshift({label: '⚠ Warnung', value: warning}) if warning
   items
 end

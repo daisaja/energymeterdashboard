@@ -1,5 +1,4 @@
 require_relative 'meter_helper/grid_meter_client'
-require_relative 'meter_helper/vz_middleware_client'
 
 STATUS_THRESHOLD_SECONDS = 300
 
@@ -18,41 +17,26 @@ def format_duration(seconds)
   end
 end
 
-# Bewertet, ob der vzlogger lebt und die Middleware Daten erhält.
+# Bewertet, ob der vzlogger lebt (letzter erfolgreicher Abruf über das lokale httpd, Port 8081).
 #
-# last_local_success:    Time des letzten erfolgreichen Abrufs von Port 8081 (nil = seit Start nie)
-# last_middleware_tuple: Ergebnis von VzMiddlewareClient.fetch: Time | :empty | :error | :db_error (nil = :empty)
-# now:                   aktuelle Zeit (testbar ohne Stubbing)
-# threshold:             Sekunden, ab denen ein Wert als veraltet gilt
+# last_local_success: Time des letzten erfolgreichen Abrufs (nil = seit Start nie)
+# now:                aktuelle Zeit (testbar ohne Stubbing)
+# threshold:          Sekunden, ab denen der Abruf als veraltet gilt
 # Rückgabe: { status: 'ok' | 'warning', message: String }
-def vzlogger_status(last_local_success, last_middleware_tuple, now = Time.now, threshold = STATUS_THRESHOLD_SECONDS)
-  problems = []
-
+def vzlogger_status(last_local_success, now = Time.now, threshold = STATUS_THRESHOLD_SECONDS)
   if last_local_success.nil?
-    problems << 'vzlogger: seit Start keine Daten'
+    { status: 'warning', message: 'vzlogger: seit Start keine Daten' }
   elsif now - last_local_success > threshold
-    problems << "vzlogger offline seit #{format_duration(now - last_local_success)}"
-  end
-
-  case last_middleware_tuple
-  when :error    then problems << 'Middleware nicht erreichbar'
-  when :db_error then problems << 'Middleware: Datenbank nicht erreichbar'
-  when :empty, nil then problems << 'Middleware: keine Daten'
+    { status: 'warning', message: "vzlogger offline seit #{format_duration(now - last_local_success)}" }
   else
-    if now - last_middleware_tuple > threshold
-      problems << "Middleware erhält keine Daten seit #{format_duration(now - last_middleware_tuple)}"
-    end
+    { status: 'ok', message: 'vzlogger OK' }
   end
-
-  return { status: 'ok', message: 'vzlogger OK' } if problems.empty?
-
-  { status: 'warning', message: problems.join(' / ') }
 end
 
 if defined?(SCHEDULER)
   # Bewusst ohne first_in => 0: Der Grid-Client braucht nach dem Start erst einen Abruf.
   SCHEDULER.every '60s', :overlap => false do
-    result = vzlogger_status(GridMeasurements.last_success_at, VzMiddlewareClient.fetch)
+    result = vzlogger_status(GridMeasurements.last_success_at)
     warning = result[:status] == 'warning'
 
     $vzlogger_warning = warning ? result[:message] : nil
