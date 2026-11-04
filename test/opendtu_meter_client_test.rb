@@ -50,4 +50,29 @@ class OpenDTUMeterClientTest < Minitest::Test
     assert_equal(13.0,    opendtu2.yield_day)
     assert_equal(1463.0,  opendtu2.yield_total)
   end
+
+  def test_opendtu_total_yield_kwh_keeps_decimals
+    OpenDTUMeterClient.class_variable_set(:@@last_values, {})
+    stub_opendtu(opendtu_response(yield_total: 2226.125977))   # echte Antwort, Einheit kWh
+
+    assert_equal(2226.126, OpenDTUMeterClient.new.yield_total_kwh)
+  end
+
+  def test_opendtu_total_yield_kwh_nil_when_missing_or_zero
+    OpenDTUMeterClient.class_variable_set(:@@last_values, {})
+    stub_opendtu(opendtu_response(yield_total: 0))
+    assert_nil(OpenDTUMeterClient.new.yield_total_kwh)
+
+    OpenDTUMeterClient.class_variable_set(:@@last_values, {})
+    stub_request(:get, OPENDTU_URL).to_return(status: 200, body: { 'total' => { 'Power' => { 'v' => 1 } } }.to_json,
+                                              headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+    assert_nil(OpenDTUMeterClient.new.yield_total_kwh)
+  end
+
+  def test_opendtu_total_yield_kwh_nil_on_error_without_history
+    OpenDTUMeterClient.class_variable_set(:@@last_values, {})
+    stub_request(:get, OPENDTU_URL).to_raise(Errno::ECONNREFUSED)
+
+    assert_nil(OpenDTUMeterClient.new.yield_total_kwh)
+  end
 end

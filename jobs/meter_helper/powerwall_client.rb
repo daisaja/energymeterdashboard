@@ -5,7 +5,7 @@ class PowerwallClient
   @@auth_token = nil
   @@last_values = {}
 
-  attr_reader :soc_percent, :power_watts, :stored_kwh
+  attr_reader :soc_percent, :power_watts, :stored_kwh, :battery_exported_kwh, :battery_imported_kwh
 
   def initialize
     @host = ENV['POWERWALL_HOST']
@@ -65,11 +65,21 @@ class PowerwallClient
     # API: positive instant_power = discharging; invert so positive = charging (Laden)
     @power_watts = (-meters.parsed_response['battery']['instant_power'].to_f).round(0)
     @stored_kwh  = (status.parsed_response['nominal_energy_remaining'].to_f / 1000.0).round(1)
+    # Kumulierte Zaehler (Wh): exported = Entladung, imported = Ladung; nil wenn nicht vorhanden
+    battery = meters.parsed_response['battery']
+    @battery_exported_kwh = wh_to_kwh(battery['energy_exported'])
+    @battery_imported_kwh = wh_to_kwh(battery['energy_imported'])
     save_values
+  end
+
+  def wh_to_kwh(wh)
+    wh.to_f > 0 ? (wh.to_f / 1000.0).round(3) : nil
   end
 
   def save_values
     @@last_values = {
+      battery_exported_kwh: @battery_exported_kwh,
+      battery_imported_kwh: @battery_imported_kwh,
       soc_percent: @soc_percent,
       power_watts: @power_watts,
       stored_kwh:  @stored_kwh
@@ -80,5 +90,7 @@ class PowerwallClient
     @soc_percent = @@last_values[:soc_percent] || 0.0
     @power_watts = @@last_values[:power_watts] || 0.0
     @stored_kwh  = @@last_values[:stored_kwh]  || 0.0
+    @battery_exported_kwh = @@last_values[:battery_exported_kwh]
+    @battery_imported_kwh = @@last_values[:battery_imported_kwh]
   end
 end

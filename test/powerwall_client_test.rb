@@ -19,11 +19,12 @@ class PowerwallClientTest < Minitest::Test
       .to_return(status: 200, body: { 'token' => token }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
   end
 
-  def stub_metrics(soc: 75.5, instant_power: -1200.0, energy_remaining: 10_200)
+  def stub_metrics(soc: 75.5, instant_power: -1200.0, energy_remaining: 10_200,
+                   battery_extra: { 'energy_exported' => 11_903_509, 'energy_imported' => 13_640_678 })
     stub_request(:get, POWERWALL_SOE_URL)
       .to_return(status: 200, body: { 'percentage' => soc }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     stub_request(:get, POWERWALL_METERS_URL)
-      .to_return(status: 200, body: { 'battery' => { 'instant_power' => instant_power } }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
+      .to_return(status: 200, body: { 'battery' => { 'instant_power' => instant_power }.merge(battery_extra) }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
     stub_request(:get, POWERWALL_STATUS_URL)
       .to_return(status: 200, body: { 'nominal_energy_remaining' => energy_remaining }.to_json, headers: { CONTENT_TYPE_JSON => APPLICATION_JSON })
   end
@@ -105,5 +106,44 @@ class PowerwallClientTest < Minitest::Test
     assert_equal(75.5,   client2.soc_percent)
     assert_equal(1200.0, client2.power_watts)
     assert_equal(10.2,   client2.stored_kwh)
+  end
+
+  def test_powerwall_client_cumulative_battery_energy_in_kwh
+    stub_login
+    stub_metrics   # exported 11903509 Wh, imported 13640678 Wh (echte Groessenordnung)
+
+    client = PowerwallClient.new
+    assert_equal(11_903.509, client.battery_exported_kwh)   # Entladung
+    assert_equal(13_640.678, client.battery_imported_kwh)   # Ladung
+  end
+
+  def test_powerwall_client_cumulative_battery_energy_nil_when_missing
+    stub_login
+    stub_metrics(battery_extra: {})
+
+    client = PowerwallClient.new
+    assert_nil(client.battery_exported_kwh)
+    assert_nil(client.battery_imported_kwh)
+    assert_equal(1200.0, client.power_watts)
+  end
+
+  def test_powerwall_client_cumulative_battery_energy_nil_without_history_on_error
+    stub_request(:post, POWERWALL_LOGIN_URL).to_raise(Errno::ECONNREFUSED)
+
+    client = PowerwallClient.new
+    assert_nil(client.battery_exported_kwh)
+    assert_nil(client.battery_imported_kwh)
+  end
+
+  def test_powerwall_client_cumulative_battery_energy_kept_on_error
+    stub_login
+    stub_metrics
+    PowerwallClient.new
+
+    WebMock.reset!
+    stub_request(:get, POWERWALL_SOE_URL).to_raise(Errno::ECONNREFUSED)
+    client = PowerwallClient.new
+    assert_equal(11_903.509, client.battery_exported_kwh)
+    assert_equal(13_640.678, client.battery_imported_kwh)
   end
 end
