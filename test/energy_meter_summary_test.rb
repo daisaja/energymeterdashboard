@@ -38,7 +38,7 @@ class EnergyMeterSummaryTest < Minitest::Test
   # --- overview_items ---
 
   GLOBALS = %i[$month_state_initialized $kwh_supply_current_month $kwh_feed_current_month
-               $kwh_supply_current_year $kwh_feed_current_year].freeze
+               $kwh_supply_current_year $kwh_feed_current_year $vzlogger_warning].freeze
 
   def setup
     @saved_globals = GLOBALS.to_h { |g| [g, (eval("defined?(#{g})") ? eval(g.to_s) : :undefined)] }
@@ -94,5 +94,18 @@ class EnergyMeterSummaryTest < Minitest::Test
     # nil-Flag wie bei noch nicht gesetztem Global
     $month_state_initialized = nil
     assert_equal('– kWh', values[0])
+  end
+
+  def test_overview_without_warning_has_no_warning_row
+    $vzlogger_warning = nil
+    refute_includes(overview_items(@grid, @solar, @heating).map { |i| i[:label] }, '⚠ Warnung')
+  end
+
+  def test_overview_with_warning_prepends_row
+    $vzlogger_warning = 'vzlogger offline seit 14 min'
+    items = overview_items(@grid, @solar, @heating)
+    assert_equal({ label: '⚠ Warnung', value: 'vzlogger offline seit 14 min' }, items.first)
+    assert_equal('Netzbezug (Monat)', items[1][:label])
+    assert_equal(12, items.size)
   end
 end

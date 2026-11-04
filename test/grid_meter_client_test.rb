@@ -95,6 +95,44 @@ class GridMeterClientTest < Minitest::Test
     assert_equal(12345.0, grid_measures2.grid_feed_total)
   end
 
+  # --- last_success_at (für die vzlogger-Warnung) ---
+
+  def reset_last_success
+    GridMeasurements.class_variable_set(:@@last_success_at, nil)
+  end
+
+  def test_last_success_at_nil_before_first_success
+    reset_last_success
+    assert_nil(GridMeasurements.last_success_at)
+  end
+
+  def test_last_success_at_set_on_valid_data
+    reset_last_success
+    stub_grid(grid_response(feed_total_wh: 1_000, supply_total_wh: 8_765_000, current_power_w: 100))
+    before = Time.now
+    GridMeasurements.new
+    assert_operator(GridMeasurements.last_success_at, :>=, before)
+  end
+
+  def test_last_success_at_not_updated_on_connection_error
+    reset_last_success
+    stub_grid(grid_response(supply_total_wh: 8_765_000))
+    GridMeasurements.new
+    ts = GridMeasurements.last_success_at
+
+    WebMock.reset!
+    stub_request(:get, "http://192.168.178.103:8081/").to_raise(Errno::ECONNREFUSED)
+    GridMeasurements.new
+    assert_equal(ts, GridMeasurements.last_success_at)
+  end
+
+  def test_last_success_at_not_updated_when_supply_total_zero
+    reset_last_success
+    stub_grid(grid_response(supply_total_wh: 0))
+    GridMeasurements.new
+    assert_nil(GridMeasurements.last_success_at)
+  end
+
   # is_new_day helper (defined in grid_meter_client.rb)
   def test_is_new_day_at_midnight
     assert_equal(true, is_new_day(Time.new(2024, 1, 15, 0, 5, 0)))

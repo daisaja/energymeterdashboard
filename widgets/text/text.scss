@@ -30,3 +30,12 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
     font-size: 65px;
   }
 }
+
+// vzlogger_status (ops): rot bei Warnung, grün bei OK
+.widget-text.status-ok {
+  background-color: #2e9e5b;
+}
+
+.widget-text.status-warning {
+  background-color: #d9302c;
+}

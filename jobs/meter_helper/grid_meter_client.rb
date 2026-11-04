@@ -10,6 +10,12 @@ VZ_LOGGER_URL = "http://#{GRID_METER_HOST}:8081/"
 
 class GridMeasurements
   @@last_values = {}
+  @@last_success_at = nil
+
+  # Zeitpunkt des letzten erfolgreichen Abrufs mit gültigen Daten (nil seit Start ohne Erfolg)
+  def self.last_success_at
+    @@last_success_at
+  end
 
   attr_reader :grid_feed_total, :grid_feed_current,
   :grid_supply_total, :grid_supply_current
@@ -43,6 +49,8 @@ class GridMeasurements
     # berechnet grid_consumption_per_month.rb aus den Zählerständen.
 
     save_values
+    # Nur gültige Daten (Bezug gesamt > 0) zählen als Erfolg; Fallback-Verhalten bleibt unverändert
+    @@last_success_at = Time.now if @grid_supply_total > 0
   rescue Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
     puts "[GridMeter] Verbindung zu #{GRID_METER_HOST}:8081 fehlgeschlagen: Gerät nicht erreichbar"
     restore_last_values
