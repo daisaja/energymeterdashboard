@@ -129,3 +129,33 @@ def current_year_state(now = Time.now)
     'feed_baseline'   => $meter_count_feed_year_start
   }
 end
+
+# --- Verbrauch und Eigenverbrauch aus Monatsdeltas (kWh). Fehlt ein Eingang -> nil. ---
+
+# Verbrauch = Bezug + Solar - Einspeisung + Batterie-Entladung - Batterie-Ladung
+def month_consumption(supply, solar, feed, battery_out, battery_in)
+  return nil if [supply, solar, feed, battery_out, battery_in].any?(&:nil?)
+
+  supply + solar - feed + battery_out - battery_in
+end
+
+# Eigenverbrauch = Solar - Einspeisung
+def month_self_consumption(solar, feed)
+  return nil if solar.nil? || feed.nil?
+
+  solar - feed
+end
+
+# Eigenverbrauchsquote in % (nil ohne Solarertrag)
+def self_consumption_ratio(self_consumption, solar)
+  return nil if self_consumption.nil? || solar.nil? || solar <= 0
+
+  self_consumption / solar * 100.0
+end
+
+# Autarkie in % = (Verbrauch - Bezug) / Verbrauch (nil ohne Verbrauch)
+def autarky(consumption, supply)
+  return nil if consumption.nil? || supply.nil? || consumption <= 0
+
+  (consumption - supply) / consumption * 100.0
+end
