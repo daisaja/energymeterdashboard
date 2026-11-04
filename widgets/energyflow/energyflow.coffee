@@ -47,7 +47,8 @@ class Dashing.Energyflow extends Dashing.Widget
     # ─── Update kWh daily totals ─────────────────────────────
     @setText('val-solar-kwh',    "#{data.solar_kwh} kWh")
     @setText('val-grid-kwh',     "#{data.grid_kwh} kWh")
-    @setText('val-heatpump-kwh', "#{data.heatpump_kwh} kWh")
+    # heatpump_kwh ist null, wenn die YouLess-Tagesdaten veraltet sind → "–"
+    @setText('val-heatpump-kwh', if data.heatpump_kwh? then "#{data.heatpump_kwh} kWh" else '– kWh')
 
     # Grid label flips between Bezug and Einspeisung
     @setText('lbl-grid', if data.grid_w < -THRESHOLD then 'Einspeisung' else 'Netz')
